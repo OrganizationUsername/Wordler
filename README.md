@@ -4,34 +4,31 @@ This is not a very good solver.
 # Example good output:
 ```
 Playing as robot.
-RoboGuess: doges out of 21952 words.
-XXXXX
-RoboGuess: sintu out of 21951 words.
-XXYXX
-RoboGuess: cawny out of 5526 words.
-XGGGX
-RoboGuess: fawns out of 14 words.
-GGGGX
-RoboGuess: fawne out of 3 words.
-GGGGX
-RoboGuess: fawna out of 2 words.
+RoboGuess: doums out of 21952 words.
+YYXXX
+RoboGuess: cdoba out of 291 words.
+XYYXY
+RoboGuess: audio out of 56 words.
+YXYXG
+RoboGuess: fardo out of 13 words.
+XGXGG
+RoboGuess: bando out of 5 words.
+XGYGG
+RoboGuess: naldo out of 1 words.
 GGGGG
 Good job.
 ```
 # Example bad output:
 ```
 Playing as robot.
-RoboGuess: butyr out of 21952 words.
-GYXXX
-RoboGuess: bukat out of 308 words.
-GYXYX
-RoboGuess: bursa out of 76 words.
-GYXYY
-RoboGuess: beaus out of 9 words.
-GXYYG
-RoboGuess: bugas out of 6 words.
-GYXYG
-RoboGuess: babus out of 5 words.
-GGXYG
+RoboGuess: doums out of 21952 words.
+XXXYX
+RoboGuess: hempy out of 1832 words.
+XGGXX
+RoboGuess: gemot out of 57 words.
+GGGXX
+RoboGuess: gemel out of 3 words.
+GGGGG
 Failure.
+gemse, gemul
 ```
