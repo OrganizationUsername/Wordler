@@ -13,7 +13,7 @@ if (!File.Exists("FiveLetterWords.txt"))
 var possibles = File.ReadAllLines("FiveLetterWords.txt").ToList();
 var randomIndex = new Random().Next(0, possibles.Count - 1);
 var answerWord = possibles[randomIndex];
-answerWord = "naldo";
+//answerWord = "robot";
 Console.WriteLine(answerWord);
 
 var forbiddenLetters = new Dictionary<int, List<char>>();
