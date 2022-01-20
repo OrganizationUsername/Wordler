@@ -1,7 +1,8 @@
 # Wordler
 This is not a very good solver.
 
-# Example output: 
+# Example output:
+```
 Playing as robot.
 RoboGuess: doges out of 21952 words.
 XXXXX
@@ -16,3 +17,4 @@ GGGGX
 RoboGuess: fawna out of 2 words.
 GGGGG
 Good job.
+```
