@@ -13,8 +13,11 @@ if (!File.Exists("FiveLetterWords.txt"))
 var possibles = File.ReadAllLines("FiveLetterWords.txt").ToList();
 var randomIndex = new Random().Next(0, possibles.Count - 1);
 var answerWord = possibles[randomIndex];
+answerWord = "robot";
 Console.WriteLine(answerWord);
 var includedLetters = new Dictionary<char, int>();
+var forbiddenLetters = new Dictionary<int, List<char>>();
+foreach (var i in Enumerable.Range(0, 5)) { forbiddenLetters.Add(i, new()); }
 for (var c = 'a'; c <= 'z'; c++)
 {
     var key = c;
@@ -52,19 +55,25 @@ while (guessesRemaining > 0 && (result is null || result.Any(x => x != 'G')))
 
         //ToDo: If a result is all X/G, then say that the other letters tried should not be allowed.
         //ToDo: Better yet, I should figure out how to prune letters more effectively, it might not be easy with multiple letters in a word.
+        //ToDo: If there is a "Y" or "X" result, mark that position as: "Cannot be"
+
+        for (var n = 0; n < forbiddenLetters.Count; n++)
+        {
+            possibles = possibles.Where(p => !forbiddenLetters[n].Contains(p[n])).ToList();
+        }
 
         var index = 0;
-        if (guessesRemaining > 3)
+        if (guessesRemaining > 5)
         {
             var tempList = possibles.Where(c => c.Distinct().ToHashSet().Count == 5).ToList();
             if (!tempList.Any()) tempList = possibles;
-            var thisIndex = new Random().Next(0, tempList.Count - 1);
+            var thisIndex = new Random(1).Next(0, tempList.Count - 1);
             index = possibles.FindIndex(p => p == tempList[thisIndex]);
             guess = tempList[thisIndex].ToList();
         }
         else
         {
-            index = new Random().Next(0, possibles.Count - 1);
+            index = new Random(1).Next(0, possibles.Count - 1);
             guess = possibles[index].ToList();
         }
 
@@ -80,6 +89,10 @@ while (guessesRemaining > 0 && (result is null || result.Any(x => x != 'G')))
         if (result[i] == 'G')
         {
             knownPositions[i] = guess[i];
+        }
+        else
+        {
+            forbiddenLetters[i].Add(guess[i]);
         }
     }
 
@@ -108,9 +121,13 @@ while (guessesRemaining > 0 && (result is null || result.Any(x => x != 'G')))
 
 
     guessesRemaining--;
+    //Console.WriteLine("ForbiddenLetters: " + string.Join(", ", forbiddenLetters.Select(l => $"{l.Key}: { string.Join(", ", l.Value)}")));
     //Console.WriteLine("Letters: " + string.Join(", ", includedLetters.Select(l => $"{l.Key}: {l.Value}")));
     //Console.WriteLine("Position: " + string.Join(", ", knownPositions.Select(p => $"{p.Key}: {p.Value}")));
     Console.WriteLine(new string(result.ToArray()));
 }
+result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
+
 
 Console.WriteLine(result.All(x => x == 'G') ? "Good job." : "Failure.");
+Console.WriteLine($"{string.Join(", ", possibles)}");
