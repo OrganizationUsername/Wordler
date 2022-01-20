@@ -13,7 +13,7 @@ if (!File.Exists("FiveLetterWords.txt"))
 var possibles = File.ReadAllLines("FiveLetterWords.txt").ToList();
 var randomIndex = new Random().Next(0, possibles.Count - 1);
 var answerWord = possibles[randomIndex];
-//answerWord = "robot";
+answerWord = "naldo";
 Console.WriteLine(answerWord);
 
 var forbiddenLetters = new Dictionary<int, List<char>>();
@@ -115,7 +115,6 @@ while (guessesRemaining > 0 && (result is null || result.Any(x => x != 'G')))
     //Console.WriteLine("Position: " + string.Join(", ", knownPositions.Select(p => $"{p.Key}: {p.Value}")));
     Console.WriteLine(new string(result.ToArray()));
 }
-result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
 
 
 Console.WriteLine(result.All(x => x == 'G') ? "Good job." : "Failure.");
