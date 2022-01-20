@@ -13,17 +13,16 @@ if (!File.Exists("FiveLetterWords.txt"))
 var possibles = File.ReadAllLines("FiveLetterWords.txt").ToList();
 var randomIndex = new Random().Next(0, possibles.Count - 1);
 var answerWord = possibles[randomIndex];
-answerWord = "robot";
+//answerWord = "robot";
 Console.WriteLine(answerWord);
-var includedLetters = new Dictionary<char, int>();
+
 var forbiddenLetters = new Dictionary<int, List<char>>();
 foreach (var i in Enumerable.Range(0, 5)) { forbiddenLetters.Add(i, new()); }
-for (var c = 'a'; c <= 'z'; c++)
-{
-    var key = c;
-    includedLetters.Add(key, 0);
-}
+
+var includedLetters = new Dictionary<char, int>();
+for (var c = 'a'; c <= 'z'; c++) { includedLetters.Add(c, 0); }
 var knownPositions = new Dictionary<int, char>();
+
 Console.WriteLine($"Press 1 for human.");
 var tempInput = Console.ReadLine();
 var human = tempInput is null || tempInput.Contains('1');
@@ -43,24 +42,14 @@ while (guessesRemaining > 0 && (result is null || result.Any(x => x != 'G')))
     {
         var necessaryLetters = includedLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
 
-        foreach (var n in necessaryLetters)
-        {
-            possibles = possibles.Where(p => p.Contains(n)).ToList();
-        }
+        foreach (var n in necessaryLetters) { possibles = possibles.Where(p => p.Contains(n)).ToList(); }
 
-        foreach (var n in knownPositions)
-        {
-            possibles = possibles.Where(p => p[n.Key] == n.Value).ToList();
-        }
+        foreach (var n in knownPositions) { possibles = possibles.Where(p => p[n.Key] == n.Value).ToList(); }
 
-        //ToDo: If a result is all X/G, then say that the other letters tried should not be allowed.
-        //ToDo: Better yet, I should figure out how to prune letters more effectively, it might not be easy with multiple letters in a word.
-        //ToDo: If there is a "Y" or "X" result, mark that position as: "Cannot be"
+        for (var n = 0; n < forbiddenLetters.Count; n++) { possibles = possibles.Where(p => !forbiddenLetters[n].Contains(p[n])).ToList(); }
 
-        for (var n = 0; n < forbiddenLetters.Count; n++)
-        {
-            possibles = possibles.Where(p => !forbiddenLetters[n].Contains(p[n])).ToList();
-        }
+        //ToDo: I should figure out how to prune letters more effectively, it might not be easy with multiple letters in a word.
+
 
         var index = 0;
         if (guessesRemaining > 5)
@@ -130,4 +119,5 @@ result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
 
 
 Console.WriteLine(result.All(x => x == 'G') ? "Good job." : "Failure.");
-Console.WriteLine($"{string.Join(", ", possibles)}");
+if (possibles.Count < 100) { Console.WriteLine($"{string.Join(", ", possibles)}"); }
+
