@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wordler.Core;
+
+
 
 if (!File.Exists("FiveLetterWords.txt"))
 {
@@ -13,15 +16,10 @@ if (!File.Exists("FiveLetterWords.txt"))
 
 var oneTimeList = File.ReadAllLines("FiveLetterWords.txt").ToList();
 
-//answerWord = "robot";
-
-
-
 Console.WriteLine($"Press 1 for human. Everything else interpreted as robot.");
 var tempInput = Console.ReadLine();
 var human = tempInput is null || tempInput.Contains('1');
 Console.WriteLine(human ? "Playing as all human guesses." : "Playing as robot.");
-
 Console.WriteLine($"Input number of words to solve.");
 var numberString = Console.ReadLine();
 
@@ -29,22 +27,16 @@ var numberToTake = int.TryParse(numberString, out int parsedInt) ? parsedInt : 1
 var successes = 0;
 
 
-foreach (var VARIABLE in oneTimeList.Take(numberToTake))
+for (var s = 0; s < numberToTake; s++)
 {
-    var forbiddenLetters = new Dictionary<int, List<char>>();
-    foreach (var i in Enumerable.Range(0, 5)) { forbiddenLetters.Add(i, new()); }
-
-    var includedLetters = new Dictionary<char, int>();
-    for (var c = 'a'; c <= 'z'; c++) { includedLetters.Add(c, 0); }
-    var knownPositions = new Dictionary<int, char>();
-
     var guessesRemaining = 6;
     var possibles = oneTimeList.ToList();
 
     var randomIndex = new Random().Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
+    //answerWord = "robot";
     Console.WriteLine(answerWord);
-    var result = TryAnswers(guessesRemaining, human, includedLetters, possibles, knownPositions, forbiddenLetters, answerWord);
+    var result = TryAnswers(guessesRemaining, human, possibles, answerWord);
 
     var success = result.All(x => x == 'G');
     if (success) { successes++; Console.WriteLine($"Good job."); }
@@ -54,13 +46,19 @@ foreach (var VARIABLE in oneTimeList.Take(numberToTake))
 
 Console.WriteLine($"{successes} successes out of {numberToTake}.");
 
-
-
-List<char>? TryAnswers(int guessesRemaining1, bool b, Dictionary<char, int> dictionary, List<string> list, Dictionary<int, char> knownPositions1, Dictionary<int, List<char>> forbiddenLetters1, string s)
+List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string s)
 {
-    var result1 = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
+    var dictionary = new Dictionary<char, int>();
+    var forbiddenLetters = new Dictionary<char, int>();
+    for (var c = 'a'; c <= 'z'; c++) { dictionary.Add(c, 0); forbiddenLetters.Add(c, int.MaxValue); }
+
+    var knownPositions = new Dictionary<int, char>();
+    var forbiddenLetterPositions = new Dictionary<int, List<char>>();
+    foreach (var i in Enumerable.Range(0, 5)) { forbiddenLetterPositions.Add(i, new()); }
+
+    var result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
     List<char> guess;
-    while (guessesRemaining1 > 0 && (result1 is null || result1.Any(x => x != 'G')))
+    while (guessesRemaining1 > 0 && (result is null || result.Any(x => x != 'G')))
     {
         if (b)
         {
@@ -75,14 +73,20 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, Dictionary<char, int> dict
                 list = list.Where(p => p.Contains(n)).ToList();
             }
 
-            foreach (var n in knownPositions1)
+            foreach (var n in knownPositions)
             {
                 list = list.Where(p => p[n.Key] == n.Value).ToList();
             }
 
-            for (var n = 0; n < forbiddenLetters1.Count; n++)
+            //Debugger.Break();
+            foreach (var n in forbiddenLetters)
             {
-                list = list.Where(p => !forbiddenLetters1[n].Contains(p[n])).ToList();
+                list = list.Where(p => p.Count(c => c == n.Key) <= n.Value).ToList();
+            }
+
+            for (var n = 0; n < forbiddenLetterPositions.Count; n++)
+            {
+                list = list.Where(p => !forbiddenLetterPositions[n].Contains(p[n])).ToList();
             }
 
             //ToDo: I should figure out how to prune letters more effectively, it might not be easy with multiple letters in a word.
@@ -111,28 +115,60 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, Dictionary<char, int> dict
             list.RemoveAt(index);
         }
 
-        result1 = Solver.EvaluateResponse(guess, s);
-        if (result1 is null || result1.All(c => c == ' '))
+        result = Solver.EvaluateResponse(guess, s);
+        if (result is null || result.All(c => c == ' '))
         {
             continue;
         }
 
-        for (var i = 0; i < result1.Count; i++)
+        //ToDo: This is where I see if there are more X's for a particular character than guessCharacters of the same type, then I can cap the number of characters of that type are allowed.
+        //This only helps if there is at least 1 fail for the character type.
+
+        var guessHash = guess.ToHashSet();
+
+        foreach (var c in guessHash)
         {
-            if (result1[i] == 'G')
+            var indices = new List<int>();
+
+            for (var index = 0; index < guess.Count; index++)
             {
-                knownPositions1[i] = guess[i];
+                if (guess[index] == c) { indices.Add(index); }
+            }
+            var letterCount = indices.Count;
+            var plausible = false;
+            for (var index = 0; index < indices.Count; index++)
+            {
+                if (result[indices[index]] == 'X')
+                {
+                    plausible = true;
+                    letterCount--;
+                }
+            }
+
+            if (plausible && letterCount >= 0)
+            {
+                forbiddenLetters[c] = Math.Min(forbiddenLetters[c], letterCount);
+            }
+
+        }
+
+
+        for (var i = 0; i < result.Count; i++)
+        {
+            if (result[i] == 'G')
+            {
+                knownPositions[i] = guess[i];
             }
             else
             {
-                forbiddenLetters1[i].Add(guess[i]);
+                forbiddenLetterPositions[i].Add(guess[i]);
             }
         }
 
         var tempDictionary = new Dictionary<char, int>();
-        for (var i = 0; i < result1.Count; i++)
+        for (var i = 0; i < result.Count; i++)
         {
-            if (result1[i] == 'Y' || result1[i] == 'G')
+            if (result[i] == 'Y' || result[i] == 'G')
             {
                 if (tempDictionary.ContainsKey(guess[i]))
                 {
@@ -149,20 +185,25 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, Dictionary<char, int> dict
                 dictionary[kvp.Key] = Math.Max(dictionary[kvp.Key], kvp.Value);
             }
 
-            if (result1[i] == 'G')
+            if (result[i] == 'G')
             {
-                knownPositions1.TryAdd(i, guess[i]);
+                knownPositions.TryAdd(i, guess[i]);
             }
         }
+
+
+
+
+
 
 
         guessesRemaining1--;
         //Console.WriteLine("ForbiddenLetters: " + string.Join(", ", forbiddenLetters.Select(l => $"{l.Key}: { string.Join(", ", l.Value)}")));
         //Console.WriteLine("Letters: " + string.Join(", ", includedLetters.Select(l => $"{l.Key}: {l.Value}")));
         //Console.WriteLine("Position: " + string.Join(", ", knownPositions.Select(p => $"{p.Key}: {p.Value}")));
-        Console.WriteLine(new string(result1.ToArray()));
+        Console.WriteLine(new string(result.ToArray()));
     }
 
-    return result1;
+    return result;
 }
 
