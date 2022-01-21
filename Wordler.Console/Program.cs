@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using Wordler.Core;
 
-
+var outPut = false;
 
 if (!File.Exists("FiveLetterWords.txt"))
 {
@@ -30,11 +30,12 @@ var successes = 0;
 for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
-    var possibles = oneTimeList.ToList();
+    var ran = new Random(1);
+    var possibles = oneTimeList.OrderBy(c => ran.NextDouble()).ToList();
 
     var randomIndex = new Random().Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
-    //answerWord = "robot";
+    //answerWord = "poppy";
     Console.WriteLine(answerWord);
     var result = TryAnswers(guessesRemaining, human, possibles, answerWord);
 
@@ -91,28 +92,18 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string 
 
             //ToDo: I should figure out how to prune letters more effectively, it might not be easy with multiple letters in a word.
 
-
-            var index = 0;
-            if (guessesRemaining1 > 5)
-            {
-                var tempList = list.Where(c => c.Distinct().ToHashSet().Count == 5).ToList();
-                if (!tempList.Any()) tempList = list;
-                var thisIndex = new Random(1).Next(0, tempList.Count - 1);
-                index = list.FindIndex(p => p == tempList[thisIndex]);
-                guess = tempList[thisIndex].ToList();
-            }
-            else
-            {
-                index = new Random(1).Next(0, list.Count - 1);
-                guess = list[index].ToList();
-            }
+            list = list.OrderByDescending(c => c.Distinct().ToHashSet().Count).ToList();
+            guess = list.First().ToList();
 
             if (!b)
             {
-                Console.WriteLine($"RoboGuess: {new string(guess.ToArray())} out of {list.Count} words.");
+                if (outPut)
+                {
+                    Console.WriteLine($"RoboGuess: {new string(guess.ToArray())} out of {list.Count} words.");
+                }
             }
 
-            list.RemoveAt(index);
+            list.RemoveAt(0);
         }
 
         result = Solver.EvaluateResponse(guess, s);
@@ -198,10 +189,16 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string 
 
 
         guessesRemaining1--;
-        //Console.WriteLine("ForbiddenLetters: " + string.Join(", ", forbiddenLetters.Select(l => $"{l.Key}: { string.Join(", ", l.Value)}")));
-        //Console.WriteLine("Letters: " + string.Join(", ", includedLetters.Select(l => $"{l.Key}: {l.Value}")));
-        //Console.WriteLine("Position: " + string.Join(", ", knownPositions.Select(p => $"{p.Key}: {p.Value}")));
-        Console.WriteLine(new string(result.ToArray()));
+
+        if (outPut)
+        {
+
+            //Console.WriteLine("ForbiddenLetters: " + string.Join(", ", forbiddenLetters.Select(l => $"{l.Key}: { string.Join(", ", l.Value)}")));
+            //Console.WriteLine("Letters: " + string.Join(", ", includedLetters.Select(l => $"{l.Key}: {l.Value}")));
+            //Console.WriteLine("Position: " + string.Join(", ", knownPositions.Select(p => $"{p.Key}: {p.Value}")));
+
+            Console.WriteLine(new string(result.ToArray()));
+        }
     }
 
     return result;
