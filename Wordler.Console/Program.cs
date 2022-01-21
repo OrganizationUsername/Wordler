@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Wordler.Core;
 
-var outPut = false;
+var outPut = true;
 
 if (!File.Exists("FiveLetterWords.txt"))
 {
@@ -14,6 +14,7 @@ if (!File.Exists("FiveLetterWords.txt"))
 }
 
 var oneTimeList = File.ReadAllLines("FiveLetterWords.txt").ToList();
+var permanentList = oneTimeList.ToList();
 
 Console.WriteLine($"Press 1 for human. Everything else interpreted as robot.");
 var tempInput = Console.ReadLine();
@@ -37,7 +38,7 @@ for (var s = 0; s < numberToTake; s++)
     var guessesRemaining = 6;
 
     possibles.Clear();
-    possibles.AddRange(oneTimeList);
+    possibles.AddRange(permanentList);
 
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
@@ -48,7 +49,7 @@ for (var s = 0; s < numberToTake; s++)
         Console.WriteLine(answerWord);
     }
     var result = Solver.TryAnswersRemove(guessesRemaining, human, possibles, answerWord, outPut);
-    var success = result.All(x => x == 'G');
+    var success = result is not null && result.All(x => x == 'G');
 
     if (success) { successes++; }
     if (outPut)

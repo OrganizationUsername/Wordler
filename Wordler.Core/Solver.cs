@@ -166,7 +166,6 @@ namespace Wordler.Core
             List<char> guess;
             while (guessesRemaining1 > 0 && (result is null || result.Any(x => x != 'G')))
             {
-
                 var necessaryLetters = dictionary.Where(l => l.Value > 0).Select(l => l.Key).ToList();
 
                 foreach (var n in necessaryLetters)
@@ -195,18 +194,13 @@ namespace Wordler.Core
 
                 guess = list.OrderByDescending(c => c.Distinct().Count()).First().ToList();
                 PreviousGuesses.Add(new(guess.ToArray()));
-                if (!b)
-                {
-                    if (outPut)
-                    {
-                        Console.WriteLine($"RoboGuess: {new string(guess.ToArray())} out of {list.Count} words.");
-                    }
-                }
+                
+                if (outPut) { Console.WriteLine($"RoboGuess: {new string(guess.ToArray())} out of {list.Count} words."); }
 
                 list.RemoveAt(0);
 
                 result = Solver.EvaluateResponse(guess, s);
-                if (result is null || result.All(c => c == ' '))
+                if (result.All(c => c == ' '))
                 {
                     continue;
                 }
@@ -226,13 +220,11 @@ namespace Wordler.Core
                     }
                     var letterCount = indices.Count;
                     var plausible = false;
-                    for (var index = 0; index < indices.Count; index++)
+                    foreach (var i in indices)
                     {
-                        if (result[indices[index]] == 'X')
-                        {
-                            plausible = true;
-                            letterCount--;
-                        }
+                        if (result[i] != 'X') continue;
+                        plausible = true;
+                        letterCount--;
                     }
 
                     if (plausible && letterCount >= 0)
