@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Wordler.Core;
 
 var outPut = false;
@@ -26,26 +27,34 @@ var numberString = Console.ReadLine();
 var numberToTake = int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
 var successes = 0;
 
+var sw = new Stopwatch();
+sw.Start();
 
 for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
-    var ran = new Random(1);
-    var possibles = oneTimeList.OrderBy(c => ran.NextDouble()).ToList();
+    var possibles = oneTimeList.ToList();
 
     var randomIndex = new Random().Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     //answerWord = "poppy";
-    Console.WriteLine(answerWord);
+    if (outPut)
+    {
+        Console.WriteLine(answerWord);
+    }
     var result = TryAnswers(guessesRemaining, human, possibles, answerWord);
-
     var success = result.All(x => x == 'G');
-    if (success) { successes++; Console.WriteLine($"Good job."); }
-    else { Console.WriteLine($"Failure."); }
-    if (possibles.Count < 100) { Console.WriteLine($"{string.Join(", ", possibles)}"); }
+
+    if (success) { successes++; }
+    if (outPut)
+    {
+        if (success) { Console.WriteLine($"Good job."); }
+        else { Console.WriteLine($"Failure."); }
+        if (possibles.Count < 100) { Console.WriteLine($"{string.Join(", ", possibles)}"); }
+    }
 }
 
-Console.WriteLine($"{successes} successes out of {numberToTake}.");
+Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");
 
 List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string s)
 {
@@ -79,7 +88,6 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string 
                 list = list.Where(p => p[n.Key] == n.Value).ToList();
             }
 
-            //Debugger.Break();
             foreach (var n in forbiddenLetters)
             {
                 list = list.Where(p => p.Count(c => c == n.Key) <= n.Value).ToList();
@@ -89,8 +97,6 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string 
             {
                 list = list.Where(p => !forbiddenLetterPositions[n].Contains(p[n])).ToList();
             }
-
-            //ToDo: I should figure out how to prune letters more effectively, it might not be easy with multiple letters in a word.
 
             list = list.OrderByDescending(c => c.Distinct().ToHashSet().Count).ToList();
             guess = list.First().ToList();
@@ -140,9 +146,7 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string 
             {
                 forbiddenLetters[c] = Math.Min(forbiddenLetters[c], letterCount);
             }
-
         }
-
 
         for (var i = 0; i < result.Count; i++)
         {
@@ -181,13 +185,7 @@ List<char>? TryAnswers(int guessesRemaining1, bool b, List<string> list, string 
                 knownPositions.TryAdd(i, guess[i]);
             }
         }
-
-
-
-
-
-
-
+        
         guessesRemaining1--;
 
         if (outPut)
