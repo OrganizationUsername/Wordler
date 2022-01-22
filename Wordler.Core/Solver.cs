@@ -97,6 +97,10 @@ namespace Wordler.Core
                     }
                 }
                 guessesRemaining1--;
+                if (outPut)
+                {
+                    Console.WriteLine(new string(result.ToArray()));
+                }
             }
             return result;
         }

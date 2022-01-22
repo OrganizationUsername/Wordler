@@ -46,7 +46,7 @@ for (var s = 0; s < numberToTake; s++)
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
-    //answerWord = "poppy";
+    answerWord = "robot";
     if (outPut)
     {
         Console.WriteLine(answerWord);
