@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wordler.Core", "Wordler.Cor
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ReactProject", "ReactProject\ReactProject.esproj", "{CDC555F1-3F00-4B09-8526-7110EA655F0F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wordler.UnitTests", "Wordler.UnitTests\Wordler.UnitTests.csproj", "{40AAC8D1-3FEB-4570-A977-10413D5E9155}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wordler.Benchmarks", "Wordler.Benchmarks\Wordler.Benchmarks.csproj", "{D8E3BDAF-03B8-4AC7-AA15-B56C2CA72B5C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +33,14 @@ Global
 		{CDC555F1-3F00-4B09-8526-7110EA655F0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDC555F1-3F00-4B09-8526-7110EA655F0F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CDC555F1-3F00-4B09-8526-7110EA655F0F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{40AAC8D1-3FEB-4570-A977-10413D5E9155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40AAC8D1-3FEB-4570-A977-10413D5E9155}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40AAC8D1-3FEB-4570-A977-10413D5E9155}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40AAC8D1-3FEB-4570-A977-10413D5E9155}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8E3BDAF-03B8-4AC7-AA15-B56C2CA72B5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8E3BDAF-03B8-4AC7-AA15-B56C2CA72B5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8E3BDAF-03B8-4AC7-AA15-B56C2CA72B5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8E3BDAF-03B8-4AC7-AA15-B56C2CA72B5C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

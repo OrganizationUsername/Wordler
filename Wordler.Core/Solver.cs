@@ -8,8 +8,12 @@ namespace Wordler.Core
         private readonly List<int> _indices = new(5);
         private int _letterCount;
         private Dictionary<char, int> tempDictionary = new();
-        private Dictionary<int, char> knownPositions = new();
         public long startMemory = GC.GetAllocatedBytesForCurrentThread();
+
+        public static List<string> GetLines()
+        {
+            return File.ReadAllLines("FiveLetterWords.txt").ToList();
+        }
 
         public static void GetAllocations(long startMemory, string data)
         {
@@ -26,12 +30,12 @@ namespace Wordler.Core
 
         public List<char> TryAnswersRemove(int guessesRemaining1, List<string> wordList, string wordToGuess, bool outPut)
         {
-
+            var knownPosition = new char[5];
             var requiredLettersDictionary = new Dictionary<char, int>();
-            for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0);  }
+            for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0); }
 
-            var rl = new int[26];
-            var fl = new int[26];
+            var requiredLetters = new int[26];
+            var maxAllowedLetters = new int[26];
 
             var forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
@@ -43,7 +47,7 @@ namespace Wordler.Core
 
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
-                PrunePossibleWords(wordList, requiredLettersDictionary, knownPositions, fl, forbiddenLetterPositions, PreviousGuesses);
+                PrunePossibleWords(wordList, requiredLettersDictionary, knownPosition, maxAllowedLetters, forbiddenLetterPositions, PreviousGuesses);
                 //GetAllocations(startMemory, Log());
                 if (!wordList.Any()) return new();
 
@@ -79,7 +83,7 @@ namespace Wordler.Core
 
                     if (plausible && _letterCount >= 0)
                     {
-                        fl[c - 'a'] = Math.Min(fl[c - 'a'], _letterCount);
+                        maxAllowedLetters[c - 'a'] = Math.Min(maxAllowedLetters[c - 'a'], _letterCount);
                     }
                 }
                 //GetAllocations(startMemory, Log());
@@ -108,13 +112,13 @@ namespace Wordler.Core
 
                     foreach (var (key, value) in tempDictionary)
                     {
-                        rl[key - 'a'] = Math.Max(rl[key - 'a'], value);
+                        requiredLetters[key - 'a'] = Math.Max(requiredLetters[key - 'a'], value);
                         requiredLettersDictionary[key] = Math.Max(requiredLettersDictionary[key], value);
                     }
 
                     if (result[i] == 'G')
                     {
-                        knownPositions.TryAdd(i, guess[i]);
+                        knownPosition[i] = guess[i];
                     }
                 }
                 //GetAllocations(startMemory, Log());
@@ -127,9 +131,13 @@ namespace Wordler.Core
             return result;
         }
 
-        public void PrunePossibleWords(List<string> wordList, Dictionary<char, int> requiredLetters,
-            Dictionary<int, char> knownPositionDictionary, int[] forbiddenLetters,
-            List<char>[] forbiddenLetterPositions, List<string> PreviousGuesses)
+        public void PrunePossibleWords(
+            List<string> wordList,
+            Dictionary<char, int> requiredLetters,
+            char[] knownPositionDictionary,
+            int[] forbiddenLetters,
+            List<char>[] forbiddenLetterPositions,
+            List<string> PreviousGuesses)
         {
             var necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
             var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -157,12 +165,15 @@ namespace Wordler.Core
             //    wordList.RemoveAll(p => p[n.Key] != n.Value);
             //}
 
-            foreach (var n in knownPositionDictionary)
+            for (var index = 0; index < knownPositionDictionary.Length; index++)
             {
+                var n = knownPositionDictionary[index];
+                if (n is default(char)) { continue; }
+
                 for (var i = wordList.Count - 1; i >= 0; i--)
                 {
                     var word = wordList[i];
-                    if (word[n.Key] != n.Value)
+                    if (word[index] != n)
                     {
                         wordList.RemoveAt(i); // 272mb for 10
                     }
@@ -175,11 +186,17 @@ namespace Wordler.Core
             {
                 var n = forbiddenLetters[index];
                 //wordList.RemoveAll(p => p.Count(c => c == n.Key) > n.Value);
+
                 for (var i = wordList.Count - 1; i >= 0; i--)
                 {
                     var word = wordList[i];
+                    var count = 0;
+                    for (var j = 0; j < word.Length; j++)
+                    {
+                        if (word[j] == n + 'a') { count++; }
+                    }
 
-                    if (word.Count(c => c == n + 'a') > n)
+                    if (count > n)
                     {
                         wordList.RemoveAt(i); // 272mb for 10
                     }
@@ -232,7 +249,6 @@ namespace Wordler.Core
                 result[i] = 'Y';
                 answers[index] = ' ';
             }
-
             return result;
         }
     }
