@@ -15,8 +15,8 @@ namespace Wordler.Core
         {
             var endMemory = GC.GetAllocatedBytesForCurrentThread();
             Trace.WriteLine(data);
-            var temp = (endMemory - startMemory) / 1024;
-            Trace.WriteLine($"{endMemory} - {startMemory}= {temp} kb.");
+            var temp = (endMemory - startMemory) / 1024 / 1024;
+            Trace.WriteLine($"{endMemory} - {startMemory}= {temp} mb.");
         }
 
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
@@ -28,9 +28,9 @@ namespace Wordler.Core
         {
 
             var requiredLettersDictionary = new Dictionary<char, int>();
-            var forbiddenLetters = new Dictionary<char, int>();
-            for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0); forbiddenLetters.Add(c, int.MaxValue); }
+            for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0);  }
 
+            var rl = new int[26];
             var fl = new int[26];
 
             var forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
@@ -79,7 +79,6 @@ namespace Wordler.Core
 
                     if (plausible && _letterCount >= 0)
                     {
-                        forbiddenLetters[c] = Math.Min(forbiddenLetters[c], _letterCount);
                         fl[c - 'a'] = Math.Min(fl[c - 'a'], _letterCount);
                     }
                 }
@@ -109,6 +108,7 @@ namespace Wordler.Core
 
                     foreach (var (key, value) in tempDictionary)
                     {
+                        rl[key - 'a'] = Math.Max(rl[key - 'a'], value);
                         requiredLettersDictionary[key] = Math.Max(requiredLettersDictionary[key], value);
                     }
 

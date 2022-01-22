@@ -16,10 +16,7 @@ if (!File.Exists("FiveLetterWords.txt"))
 var oneTimeList = File.ReadAllLines("FiveLetterWords.txt").ToList();
 var permanentList = oneTimeList.ToList();
 
-Console.WriteLine($"Press 1 for human. Everything else interpreted as robot.");
-var tempInput = Console.ReadLine();
-var human = tempInput is null || tempInput.Contains('1');
-Console.WriteLine(human ? "Playing as all human guesses." : "Playing as robot.");
+var human = true;
 Console.WriteLine($"Input number of words to solve. -1 for all words.");
 var numberString = Console.ReadLine();
 
@@ -43,7 +40,7 @@ for (var s = 0; s < numberToTake; s++)
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
-    answerWord = "robot";
+    //answerWord = "robot";
     if (outPut)
     {
         Console.WriteLine(answerWord);
@@ -61,6 +58,5 @@ for (var s = 0; s < numberToTake; s++)
     }
 }
 
-Solver.GetAllocations(startMemory, "Finished.");
 Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");
-Solver.GetAllocations(startMemory, Solver.Log());
+Solver.GetAllocations(startMemory, "Finished: " + Solver.Log());
