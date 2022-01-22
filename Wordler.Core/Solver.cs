@@ -15,10 +15,11 @@ namespace Wordler.Core
         {
             var endMemory = GC.GetAllocatedBytesForCurrentThread();
             Trace.WriteLine(data);
-            Trace.WriteLine($"{endMemory} - {startMemory}= {(endMemory - startMemory) / 1024 / 1024} mb.");
+            var temp = (endMemory - startMemory) / 1024;
+            Trace.WriteLine($"{endMemory} - {startMemory}= {temp} kb.");
         }
 
-        static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
+        public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
         {
             return $" {Path.GetFileName(file)}, {line}";
         }
@@ -30,33 +31,34 @@ namespace Wordler.Core
             var forbiddenLetters = new Dictionary<char, int>();
             for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0); forbiddenLetters.Add(c, int.MaxValue); }
 
-            var forbiddenLetterPositions = new Dictionary<int, List<char>>();
-            foreach (var i in Enumerable.Range(0, 5)) { forbiddenLetterPositions.Add(i, new()); }
+            var fl = new int[26];
+
+            var forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
             var PreviousGuesses = new List<string>();
             var result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
             List<char> guess;
 
-            GetAllocations(startMemory, Log());
+            //GetAllocations(startMemory, Log());
 
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
-                PrunePossibleWords(wordList, requiredLettersDictionary, knownPositions, forbiddenLetters, forbiddenLetterPositions, PreviousGuesses);
-                GetAllocations(startMemory, Log());
+                PrunePossibleWords(wordList, requiredLettersDictionary, knownPositions, fl, forbiddenLetterPositions, PreviousGuesses);
+                //GetAllocations(startMemory, Log());
                 if (!wordList.Any()) return new();
 
                 guess = wordList.OrderByDescending(c => c.Distinct().Count()).First().ToList();
                 PreviousGuesses.Add(new(guess.ToArray()));
 
                 if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count} words."); }
-
+                //GetAllocations(startMemory, Log());
                 wordList.RemoveAt(0);
                 result = EvaluateResponse(guess, wordToGuess);
-
+                //GetAllocations(startMemory, Log());
                 if (result.All(c => c == ' ')) { continue; }
 
                 var guessHash = guess.ToHashSet();
-                GetAllocations(startMemory, Log());
+                //GetAllocations(startMemory, Log());
                 foreach (var c in guessHash)
                 {
                     _indices.Clear();
@@ -78,9 +80,10 @@ namespace Wordler.Core
                     if (plausible && _letterCount >= 0)
                     {
                         forbiddenLetters[c] = Math.Min(forbiddenLetters[c], _letterCount);
+                        fl[c - 'a'] = Math.Min(fl[c - 'a'], _letterCount);
                     }
                 }
-                GetAllocations(startMemory, Log());
+                //GetAllocations(startMemory, Log());
                 for (var i = 0; i < result.Count; i++)
                 {
                     if (result[i] != 'G')
@@ -89,7 +92,7 @@ namespace Wordler.Core
                     }
                 }
                 tempDictionary.Clear();
-                GetAllocations(startMemory, Log());
+                //GetAllocations(startMemory, Log());
                 for (var i = 0; i < result.Count; i++)
                 {
                     if (result[i] == 'Y' || result[i] == 'G')
@@ -114,7 +117,7 @@ namespace Wordler.Core
                         knownPositions.TryAdd(i, guess[i]);
                     }
                 }
-                GetAllocations(startMemory, Log());
+                //GetAllocations(startMemory, Log());
                 guessesRemaining1--;
                 if (outPut)
                 {
@@ -124,45 +127,90 @@ namespace Wordler.Core
             return result;
         }
 
-        public void PrunePossibleWords(List<string> wordList, Dictionary<char, int> requiredLetters, Dictionary<int, char> knownPositionDictionary, Dictionary<char, int> forbiddenLetters, Dictionary<int, List<char>> forbiddenLetterPositions, List<string> PreviousGuesses)
+        public void PrunePossibleWords(List<string> wordList, Dictionary<char, int> requiredLetters,
+            Dictionary<int, char> knownPositionDictionary, int[] forbiddenLetters,
+            List<char>[] forbiddenLetterPositions, List<string> PreviousGuesses)
         {
             var necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
-            GetAllocations(startMemory, Log());
+            var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
+            GetAllocations(tempStartMemory, Log());
 
-            foreach (var n in necessaryLetters)
+            for (var index = 0; index < necessaryLetters.Count; index++)
             {
-                wordList.RemoveAll(p => !p.Contains(n));
+                var n = necessaryLetters[index];
+                //for (var i = wordList.Count - 1; i >= 0; i--)
+                //{
+                //    var word = wordList[i];
+                //    if (!word.Contains(n))
+                //    {
+                //        wordList.RemoveAt(i); // 272mb for 10
+                //    }
+                //}
+
+                wordList.RemoveAll(p => !p.Contains(n)); // 272mb for 10
             }
-            GetAllocations(startMemory, Log());
+
+            GetAllocations(tempStartMemory, Log());
+
+            //foreach (var n in knownPositionDictionary)
+            //{
+            //    wordList.RemoveAll(p => p[n.Key] != n.Value);
+            //}
 
             foreach (var n in knownPositionDictionary)
             {
-                wordList.RemoveAll(p => p[n.Key] != n.Value);
+                for (var i = wordList.Count - 1; i >= 0; i--)
+                {
+                    var word = wordList[i];
+                    if (word[n.Key] != n.Value)
+                    {
+                        wordList.RemoveAt(i); // 272mb for 10
+                    }
+                }
             }
-            GetAllocations(startMemory, Log());
 
-            foreach (var n in forbiddenLetters)
+            GetAllocations(tempStartMemory, Log());
+
+            for (var index = 0; index < forbiddenLetters.Length; index++)
             {
-                wordList.RemoveAll(p => p.Count(c => c == n.Key) > n.Value);
+                var n = forbiddenLetters[index];
+                //wordList.RemoveAll(p => p.Count(c => c == n.Key) > n.Value);
+                for (var i = wordList.Count - 1; i >= 0; i--)
+                {
+                    var word = wordList[i];
+
+                    if (word.Count(c => c == n + 'a') > n)
+                    {
+                        wordList.RemoveAt(i); // 272mb for 10
+                    }
+                }
             }
-            GetAllocations(startMemory, Log());
 
-            for (var n = 0; n < forbiddenLetterPositions.Count; n++)
+            GetAllocations(startMemory, Log()); // ~17mb
+
+            for (var n = 0; n < forbiddenLetterPositions.Length; n++)
             {
-                wordList.RemoveAll(p => forbiddenLetterPositions[n].Contains(p[n]));
+                for (var i = wordList.Count - 1; i >= 0; i--)
+                {
+                    var word = wordList[i];
+                    if (forbiddenLetterPositions[n].Contains(wordList[i][n]))
+                    {
+                        wordList.RemoveAt(i); // 272mb for 10
+                    }
+                }
             }
             GetAllocations(startMemory, Log());
             wordList.RemoveAll(g => PreviousGuesses.Contains(g));
             GetAllocations(startMemory, Log());
-
         }
 
-        public static List<char> EvaluateResponse(List<char> guessLetters, string targetWord)
+        public List<char> EvaluateResponse(List<char> guessLetters, string targetWord)
         {
+            //GetAllocations(startMemory, Log());
             var result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
             if (guessLetters.Count != 5) return null;
             var answers = targetWord.ToList();
-
+            //GetAllocations(startMemory, Log());
             for (var i = 0; i < 5; i++)
             {
                 if (guessLetters[i] == targetWord[i])
@@ -171,6 +219,7 @@ namespace Wordler.Core
                     answers[i] = ' ';
                 }
             }
+            //GetAllocations(startMemory, Log());
             for (var i = 0; i < 5; i++)
             {
                 if (result[i] != ' ') { continue; }

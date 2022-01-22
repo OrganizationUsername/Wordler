@@ -63,4 +63,4 @@ for (var s = 0; s < numberToTake; s++)
 
 Solver.GetAllocations(startMemory, "Finished.");
 Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");
-
+Solver.GetAllocations(startMemory, Solver.Log());
