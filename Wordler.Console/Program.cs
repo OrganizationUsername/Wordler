@@ -34,15 +34,12 @@ var rand = new Random(1);
 
 var possibles = oneTimeList.ToList();
 
-var startMemory = GC.GetAllocatedBytesForCurrentThread();
-
+long startMemory = GC.GetAllocatedBytesForCurrentThread();
 for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
-
     possibles.Clear();
     possibles.AddRange(permanentList);
-
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
@@ -54,9 +51,7 @@ for (var s = 0; s < numberToTake; s++)
 
     Solver solver = new Solver();
     var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut);
-
     var success = result.All(x => x == 'G');
-
     if (success) { successes++; }
     if (outPut)
     {
@@ -65,6 +60,7 @@ for (var s = 0; s < numberToTake; s++)
         if (possibles.Count < 100) { Console.WriteLine($"{string.Join(", ", possibles)}"); }
     }
 }
-var endMemory = GC.GetAllocatedBytesForCurrentThread();
-Trace.WriteLine($"{endMemory} - {startMemory}= {(endMemory - startMemory) / 1024 / 1024} mb.");
+
+Solver.GetAllocations(startMemory, "Finished.");
 Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");
+
