@@ -7,7 +7,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(10, 100)]
+    [Params(10)]
     public int Count { get; set; }
 
     private List<string> _allWords = new();

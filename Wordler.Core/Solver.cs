@@ -48,6 +48,10 @@ namespace Wordler.Core
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
                 PrunePossibleWords(wordList, requiredLettersDictionary, knownPosition, maxAllowedLetters, forbiddenLetterPositions, PreviousGuesses);
+                knownPosition = new char[5];
+                forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
+                maxAllowedLetters = new int[26];
+
                 //GetAllocations(startMemory, Log());
                 if (!wordList.Any()) return new();
 
@@ -139,6 +143,10 @@ namespace Wordler.Core
             List<char>[] forbiddenLetterPositions,
             List<string> PreviousGuesses)
         {
+            //ToDo: Some of the heuristics don't need to be run.
+            //i.e. : The 1st character cannot be 'a', 'e', and 'o', then later the 1st character is 'r'.
+            //Right now, it iterates through the list for the 1st heuristic even though it's already been pruned.
+
             var necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
             var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
             GetAllocations(tempStartMemory, Log());
@@ -146,16 +154,16 @@ namespace Wordler.Core
             for (var index = 0; index < necessaryLetters.Count; index++)
             {
                 var n = necessaryLetters[index];
-                //for (var i = wordList.Count - 1; i >= 0; i--)
-                //{
-                //    var word = wordList[i];
-                //    if (!word.Contains(n))
-                //    {
-                //        wordList.RemoveAt(i); // 272mb for 10
-                //    }
-                //}
+                for (var i = wordList.Count - 1; i >= 0; i--)
+                {
+                    var word = wordList[i];
+                    if (!word.Contains(n))
+                    {
+                        wordList.RemoveAt(i);
+                    }
+                }
 
-                wordList.RemoveAll(p => !p.Contains(n)); // 272mb for 10
+                //wordList.RemoveAll(p => !p.Contains(n));
             }
 
             GetAllocations(tempStartMemory, Log());
@@ -175,7 +183,7 @@ namespace Wordler.Core
                     var word = wordList[i];
                     if (word[index] != n)
                     {
-                        wordList.RemoveAt(i); // 272mb for 10
+                        wordList.RemoveAt(i);
                     }
                 }
             }
@@ -198,12 +206,12 @@ namespace Wordler.Core
 
                     if (count > n)
                     {
-                        wordList.RemoveAt(i); // 272mb for 10
+                        wordList.RemoveAt(i);
                     }
                 }
             }
 
-            GetAllocations(startMemory, Log()); // ~17mb
+            GetAllocations(startMemory, Log());
 
             for (var n = 0; n < forbiddenLetterPositions.Length; n++)
             {
@@ -212,7 +220,7 @@ namespace Wordler.Core
                     var word = wordList[i];
                     if (forbiddenLetterPositions[n].Contains(wordList[i][n]))
                     {
-                        wordList.RemoveAt(i); // 272mb for 10
+                        wordList.RemoveAt(i);
                     }
                 }
             }

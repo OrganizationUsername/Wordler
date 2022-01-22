@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Wordler.Core;
 
-var outPut = true;
+var outPut = false;
 
 if (!File.Exists("FiveLetterWords.txt"))
 {
