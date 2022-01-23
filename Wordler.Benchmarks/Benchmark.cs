@@ -23,22 +23,8 @@ public class Benchmark
         ssp = new SwearSolver(Count, true);
     }
 
-    //[Benchmark]
-    public string NaiveSolve_ToList()
-    {
-        var sb = new StringBuilder();
-        foreach (var s in _randomWords)
-        {
-            var reloadableWords = _allWords.ToList();
-
-            Solver solver = new Solver();
-            sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
-        }
-        return sb.ToString();
-    }
-
     [Benchmark(Baseline = true)]
-    public string NaiveSolve_ClearAddRange()
+    public string NaiveSolve()
     {
         var sb = new StringBuilder();
         var reloadableWords = new List<string>();

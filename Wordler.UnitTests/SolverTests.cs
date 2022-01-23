@@ -135,21 +135,4 @@ public class SolverTests
         Assert.Equal(1, wordList.Count);
     }
 
-    [Fact]
-    public void PruneImpossibleWords_PreviousGuesses_OK()
-    {
-        var wordList = new List<string>() { "robot", "sabot", "radio" };
-
-        var forbiddenLetterPositions = new List<string>() { "sabot", "radio" };
-
-        Solver solver = new Solver();
-        solver.PrunePossibleWords(
-            wordList,
-            new(),
-            Array.Empty<char>(),
-            Array.Empty<int>(),
-            Array.Empty<List<char>>(),
-            forbiddenLetterPositions);
-        Assert.Equal(1, wordList.Count);
-    }
 }

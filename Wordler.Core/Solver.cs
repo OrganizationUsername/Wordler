@@ -9,6 +9,10 @@ namespace Wordler.Core
         private int _letterCount;
         private Dictionary<char, int> tempDictionary = new();
         public long StartMemory;
+        public const char Good = 'G';
+        public const char BadPosition = 'Y';
+        public const char Bad = 'X';
+
 
         public static List<string> GetLines()
         {
@@ -27,7 +31,7 @@ namespace Wordler.Core
             return $" {Path.GetFileName(file)}, {line}";
         }
 
-        public char[] TryAnswersRemove(int guessesRemaining1, List<string> wordList, string wordToGuess, bool outPut)
+        public char[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
         {
             StartMemory = GC.GetAllocatedBytesForCurrentThread();
             var knownPosition = new char[5];
@@ -40,7 +44,6 @@ namespace Wordler.Core
 
             var forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
-            var PreviousGuesses = new List<string>();
             var result = new char[] { ' ', ' ', ' ', ' ', ' ' };
             List<char> guess;
             var maxDiversity = 5;
@@ -55,7 +58,7 @@ namespace Wordler.Core
 
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
-                PrunePossibleWords(wordList, requiredLettersDictionary, knownPosition, maxAllowedLetters, forbiddenLetterPositions, PreviousGuesses);
+                PrunePossibleWords(wordList, requiredLettersDictionary, knownPosition, maxAllowedLetters, forbiddenLetterPositions);
                 knownPosition = new char[5];
                 forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
                 maxAllowedLetters = new int[26];
@@ -109,7 +112,6 @@ namespace Wordler.Core
                 guess = mostDiverseWord.ToList();
 
                 GetAllocations(StartMemory, $"After   Sort:" + Log());
-                PreviousGuesses.Add(new(guess.ToArray()));
 
                 if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count + 1} words."); }
                 ///*GetAllocations(StartMemory, Log());*/
@@ -134,7 +136,7 @@ namespace Wordler.Core
                     for (var index = 0; index < arrayIndex; index++)
                     {
                         var i = _indices[index];
-                        if (result[i] != 'X') continue;
+                        if (result[i] != Bad) continue;
                         plausible = true;
                         _letterCount--;
                     }
@@ -147,7 +149,7 @@ namespace Wordler.Core
                 ///*GetAllocations(StartMemory, Log());*/
                 for (var i = 0; i < result.Length; i++)
                 {
-                    if (result[i] != 'G')
+                    if (result[i] != Good)
                     {
                         forbiddenLetterPositions[i].Add(guess[i]);
                     }
@@ -156,7 +158,7 @@ namespace Wordler.Core
                 ///*GetAllocations(StartMemory, Log());*/
                 for (var i = 0; i < result.Length; i++)
                 {
-                    if (result[i] == 'Y' || result[i] == 'G')
+                    if (result[i] == BadPosition || result[i] == Good)
                     {
                         if (tempDictionary.ContainsKey(guess[i]))
                         {
@@ -174,7 +176,7 @@ namespace Wordler.Core
                         requiredLettersDictionary[key] = Math.Max(requiredLettersDictionary[key], value);
                     }
 
-                    if (result[i] == 'G')
+                    if (result[i] == Good)
                     {
                         knownPosition[i] = guess[i];
                     }
@@ -190,12 +192,11 @@ namespace Wordler.Core
         }
 
         public void PrunePossibleWords(
-            List<string> wordList,
+            IList<string> wordList,
             Dictionary<char, int> requiredLetters,
             char[] knownPositionDictionary,
             int[] forbiddenLetters,
-            List<char>[] forbiddenLetterPositions,
-            List<string> PreviousGuesses)
+            List<char>[] forbiddenLetterPositions)
         {
             //ToDo: Some of the heuristics don't need to be run.
             //i.e. : The 1st character cannot be 'a', 'e', and 'o', then later the 1st character is 'r'.
@@ -278,8 +279,6 @@ namespace Wordler.Core
                     }
                 }
             }
-            //GetAllocations(StartMemory, Log());
-            wordList.RemoveAll(g => PreviousGuesses.Contains(g));
             //GetAllocations(StartMemory, Log());
         }
 
