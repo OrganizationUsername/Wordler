@@ -5,7 +5,7 @@ using System.Linq;
 using Wordler.Core;
 
 var outPut = true;
-
+long startMemory = GC.GetAllocatedBytesForCurrentThread();
 if (!File.Exists("FiveLetterWords.txt"))
 {
     var lines = File.ReadAllLines("words.txt");//From: https://raw.githubusercontent.com/dwyl/english-words/master/words.txt
@@ -30,13 +30,16 @@ sw.Start();
 var rand = new Random(1);
 
 var possibles = oneTimeList.ToList();
+Solver.GetAllocations(startMemory, "Before  Loop: " + Solver.Log());
 
-long startMemory = GC.GetAllocatedBytesForCurrentThread();
+startMemory = GC.GetAllocatedBytesForCurrentThread();
 for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
+
     possibles.Clear();
-    possibles.AddRange(permanentList);
+    possibles.AddRange(permanentList); // 520 bytes allocated
+
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
@@ -45,9 +48,11 @@ for (var s = 0; s < numberToTake; s++)
     {
         Console.WriteLine(answerWord);
     }
-
     Solver solver = new Solver();
-    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut);
+
+    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut); // 9_538_304 bytes allocated
+
+    Solver.GetAllocations(startMemory, "After  Guess: " + Solver.Log());
     var success = result.All(x => x == 'G');
     if (success) { successes++; }
     if (outPut)

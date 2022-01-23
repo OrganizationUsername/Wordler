@@ -7,7 +7,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(10)]
+    [Params(10, 100)]
     public int Count { get; set; }
 
     private List<string> _allWords = new();
@@ -20,7 +20,7 @@ public class Benchmark
         _randomWords = _allWords.OrderBy(l => ran.NextDouble()).Take(Count).ToList();
     }
 
-    [Benchmark(Baseline = true)]
+    //[Benchmark]
     public string NaiveSolve_ToList()
     {
         var sb = new StringBuilder();
@@ -34,7 +34,7 @@ public class Benchmark
         return sb.ToString();
     }
 
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public string NaiveSolve_ClearAddRange()
     {
         var sb = new StringBuilder();

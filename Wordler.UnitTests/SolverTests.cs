@@ -16,24 +16,6 @@ public class SolverTests
         WordsList = Solver.GetLines();
     }
 
-    /*
-oases
-RoboGuess: becht out of 11496 words.
-XYXXX
-RoboGuess: chefs out of 3456 words. //'c' shouldn't have been attempted here because in the last run, it wasn't valid. 
-XXYXG
-RoboGuess: dikes out of 350 words.
-XXXGG
-RoboGuess: flies out of 187 words.
-XXXGG
-RoboGuess: gybes out of 154 words.
-XXXGG
-RoboGuess: holes out of 117 words.
-XYXGG
-Failure.
-     */
-
-
     [Fact]
     public void Test1000Words_ToList()
     {
