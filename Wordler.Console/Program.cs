@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Wordler.Core;
 
-var outPut = false;
+var outPut = true;
 
 if (!File.Exists("FiveLetterWords.txt"))
 {
@@ -40,7 +40,7 @@ for (var s = 0; s < numberToTake; s++)
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
-    //answerWord = "robot";
+    //answerWord = "oases";
     if (outPut)
     {
         Console.WriteLine(answerWord);
@@ -58,5 +58,5 @@ for (var s = 0; s < numberToTake; s++)
     }
 }
 
-Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");
 Solver.GetAllocations(startMemory, "Finished: " + Solver.Log());
+Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");

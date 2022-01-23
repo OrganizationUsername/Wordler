@@ -36,6 +36,7 @@ namespace Wordler.Core
 
             var requiredLetters = new int[26];
             var maxAllowedLetters = new int[26];
+            for (var i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
 
             var forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
@@ -43,7 +44,7 @@ namespace Wordler.Core
             var result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
             List<char> guess;
 
-            //GetAllocations(startMemory, Log());
+            ///*GetAllocations(startMemory, Log());*/
 
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
@@ -51,22 +52,25 @@ namespace Wordler.Core
                 knownPosition = new char[5];
                 forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
                 maxAllowedLetters = new int[26];
+                for (var i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
 
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 if (!wordList.Any()) return new();
 
                 guess = wordList.OrderByDescending(c => c.Distinct().Count()).First().ToList();
                 PreviousGuesses.Add(new(guess.ToArray()));
 
+
+
                 if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count} words."); }
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 wordList.RemoveAt(0);
                 result = EvaluateResponse(guess, wordToGuess);
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 if (result.All(c => c == ' ')) { continue; }
 
                 var guessHash = guess.ToHashSet();
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 foreach (var c in guessHash)
                 {
                     _indices.Clear();
@@ -77,7 +81,7 @@ namespace Wordler.Core
 
                     _letterCount = _indices.Count;
                     var plausible = false;
-
+                    
                     foreach (var i in _indices)
                     {
                         if (result[i] != 'X') continue;
@@ -90,7 +94,7 @@ namespace Wordler.Core
                         maxAllowedLetters[c - 'a'] = Math.Min(maxAllowedLetters[c - 'a'], _letterCount);
                     }
                 }
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 for (var i = 0; i < result.Count; i++)
                 {
                     if (result[i] != 'G')
@@ -99,7 +103,7 @@ namespace Wordler.Core
                     }
                 }
                 tempDictionary.Clear();
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 for (var i = 0; i < result.Count; i++)
                 {
                     if (result[i] == 'Y' || result[i] == 'G')
@@ -125,7 +129,7 @@ namespace Wordler.Core
                         knownPosition[i] = guess[i];
                     }
                 }
-                //GetAllocations(startMemory, Log());
+                ///*GetAllocations(startMemory, Log());*/
                 guessesRemaining1--;
                 if (outPut)
                 {
@@ -149,7 +153,7 @@ namespace Wordler.Core
 
             var necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
             var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
-            GetAllocations(tempStartMemory, Log());
+            //GetAllocations(tempStartMemory, Log());
 
             for (var index = 0; index < necessaryLetters.Count; index++)
             {
@@ -166,7 +170,7 @@ namespace Wordler.Core
                 //wordList.RemoveAll(p => !p.Contains(n));
             }
 
-            GetAllocations(tempStartMemory, Log());
+            //GetAllocations(tempStartMemory, Log());
 
             //foreach (var n in knownPositionDictionary)
             //{
@@ -201,7 +205,7 @@ namespace Wordler.Core
                     var count = 0;
                     for (var j = 0; j < word.Length; j++)
                     {
-                        if (word[j] == n + 'a') { count++; }
+                        if (word[j] == index + 'a') { count++; }
                     }
 
                     if (count > n)
@@ -211,7 +215,7 @@ namespace Wordler.Core
                 }
             }
 
-            GetAllocations(startMemory, Log());
+            GetAllocations(tempStartMemory, Log());
 
             for (var n = 0; n < forbiddenLetterPositions.Length; n++)
             {
@@ -224,18 +228,18 @@ namespace Wordler.Core
                     }
                 }
             }
-            GetAllocations(startMemory, Log());
+            //GetAllocations(startMemory, Log());
             wordList.RemoveAll(g => PreviousGuesses.Contains(g));
-            GetAllocations(startMemory, Log());
+            //GetAllocations(startMemory, Log());
         }
 
         public List<char> EvaluateResponse(List<char> guessLetters, string targetWord)
         {
-            //GetAllocations(startMemory, Log());
+            ///*GetAllocations(startMemory, Log());*/
             var result = new List<char>() { ' ', ' ', ' ', ' ', ' ' };
             if (guessLetters.Count != 5) return null;
             var answers = targetWord.ToList();
-            //GetAllocations(startMemory, Log());
+            ///*GetAllocations(startMemory, Log());*/
             for (var i = 0; i < 5; i++)
             {
                 if (guessLetters[i] == targetWord[i])
@@ -244,7 +248,7 @@ namespace Wordler.Core
                     answers[i] = ' ';
                 }
             }
-            //GetAllocations(startMemory, Log());
+            ///*GetAllocations(startMemory, Log());*/
             for (var i = 0; i < 5; i++)
             {
                 if (result[i] != ' ') { continue; }
