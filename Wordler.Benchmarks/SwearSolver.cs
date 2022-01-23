@@ -2,47 +2,60 @@
 
 public class SwearSolver
 {
-    public void Run(int runCount)
+    private string[][] wordlist;
+    private Dictionary<char, HashSet<string>>[] map;
+    private Dictionary<char, HashSet<string>>[][] directMap;
+
+    public SwearSolver(int runCount)
     {
-        var rand = new Random();
-        var results = new List<(int, bool, TimeSpan)>();
-        var wordlist = ReservedList.AbelWords;
+        this.wordlist = new string[runCount][];
+        this.map = new Dictionary<char, HashSet<string>>[runCount];
+        this.directMap = new Dictionary<char, HashSet<string>>[runCount][];
 
         for (var run = 0; run < runCount; run++)
         {
-            var prompt = wordlist[rand.Next() % wordlist.Length];
-            var start = DateTime.UtcNow;
-            var nextGuessPool = wordlist.ToHashSet();
-            var correct = new char[5];
-            var proximate = new HashSet<char>();
-            var guess = wordlist[rand.Next() % wordlist.Length];
-            var attempt = 1;
-            var map = new Dictionary<char, HashSet<string>>();
-            var directMap = new Dictionary<char, HashSet<string>>[5];
+            this.wordlist[run] = ReservedList.AbelWords.ToList().ToArray();
+            this.map[run] = new Dictionary<char, HashSet<string>>();
+            this.directMap[run] = new Dictionary<char, HashSet<string>>[5];
 
             for (var i = 0; i < 5; i++)
             {
-                directMap[i] = new Dictionary<char, HashSet<string>>();
+                this.directMap[run][i] = new Dictionary<char, HashSet<string>>();
             }
 
             for (var c = 'a'; c <= 'z'; c++)
             {
-                map[c] = new HashSet<string>();
-                directMap[0][c] = new HashSet<string>();
-                directMap[1][c] = new HashSet<string>();
-                directMap[2][c] = new HashSet<string>();
-                directMap[3][c] = new HashSet<string>();
-                directMap[4][c] = new HashSet<string>();
+                map[run][c] = new HashSet<string>();
+                directMap[run][0][c] = new HashSet<string>();
+                directMap[run][1][c] = new HashSet<string>();
+                directMap[run][2][c] = new HashSet<string>();
+                directMap[run][3][c] = new HashSet<string>();
+                directMap[run][4][c] = new HashSet<string>();
             }
 
-            foreach (var word in wordlist)
+            foreach (var word in wordlist[run])
             {
                 for (var i = 0; i < 5; i++)
                 {
-                    map[word[i]].Add(word);
-                    directMap[i][word[i]].Add(word);
+                    map[run][word[i]].Add(word);
+                    directMap[run][i][word[i]].Add(word);
                 }
             }
+        }
+    }
+
+    public void Run(int runCount)
+    {
+        var rand = new Random();
+
+        Parallel.For(0, runCount, run =>
+        {
+            var prompt = wordlist[run][rand.Next() % wordlist.Length];
+            var nextGuessPool = wordlist[run].ToHashSet();
+            var correct = new char[5];
+            var proximate = new HashSet<char>();
+            var guess = wordlist[run][rand.Next() % wordlist.Length];
+            var attempt = 1;
 
             while (!guess.Equals(prompt) || attempt == 7)
             {
@@ -55,11 +68,12 @@ public class SwearSolver
                     else if (prompt.Any(c => guess[i] == c))
                     {
                         proximate.Add(guess[i]);
-                        nextGuessPool = nextGuessPool.Except(directMap[i][guess[i]]).ToHashSet();
+                        nextGuessPool.ExceptWith(directMap[run][i][guess[i]]);
                     }
                     else
                     {
-                        nextGuessPool = nextGuessPool.Except(map[guess[i]]).Except(directMap[i][guess[i]]).ToHashSet();
+                        nextGuessPool.ExceptWith(map[run][guess[i]]);
+                        nextGuessPool.ExceptWith(directMap[run][i][guess[i]]);
                     }
                 }
 
@@ -67,7 +81,7 @@ public class SwearSolver
                 {
                     if (correct[i] != 0)
                     {
-                        nextGuessPool = nextGuessPool.Intersect(directMap[i][correct[i]]).ToHashSet();
+                        nextGuessPool.IntersectWith(directMap[run][i][correct[i]]);
                     }
                 }
 
@@ -75,20 +89,13 @@ public class SwearSolver
                 {
                     foreach (var c in proximate)
                     {
-                        nextGuessPool = nextGuessPool.Intersect(map[c]).ToHashSet();
+                        nextGuessPool.IntersectWith(map[run][c]);
                     }
                 }
 
                 guess = nextGuessPool.ToArray()[rand.Next() % nextGuessPool.Count];
                 attempt++;
             }
-            var duration = DateTime.UtcNow - start;
-            results.Add((run, attempt != 7, duration));
-        }
-
-        foreach (var result in results)
-        {
-            Console.WriteLine($"{result.Item1},{result.Item2},{result.Item3:G}");
-        }
+        });
     }
 }

@@ -18,7 +18,7 @@ public class Benchmark
         _allWords = Solver.GetLines();
         var ran = new Random(2);
         _randomWords = _allWords.OrderBy(l => ran.NextDouble()).Take(Count).ToList();
-        ss = new SwearSolver();
+        ss = new SwearSolver(Count);
     }
 
     //[Benchmark]
