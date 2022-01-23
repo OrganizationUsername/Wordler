@@ -5,7 +5,7 @@ namespace Wordler.Core
 {
     public struct Solver
     {
-        private readonly List<int> _indices = new(5);
+        private readonly int[] _indices = new int[5];
         private int _letterCount;
         private Dictionary<char, int> tempDictionary = new();
         public long StartMemory;
@@ -67,12 +67,9 @@ namespace Wordler.Core
 
                 GetAllocations(StartMemory, $"Before  Sort:" + Log());
 
-                
-
                 winningIndex = 0;
-                currentDiversity = 0;
                 runningDiversity = 0;
-                mostDiverseWord = null;
+                mostDiverseWord = default;
                 for (var index = 0; index < wordList.Count; index++)
                 {
                     Array.Clear(diversityCharacters);
@@ -95,12 +92,11 @@ namespace Wordler.Core
                         winningIndex = index;
                         runningDiversity = currentDiversity;
                         mostDiverseWord = g;
-                    }
-
-                    if (currentDiversity == maxDiversity)
-                    {
-                        wordList.RemoveAt(winningIndex);
-                        break;
+                        if (currentDiversity == maxDiversity)
+                        {
+                            wordList.RemoveAt(winningIndex);
+                            break;
+                        }
                     }
                 }
 
@@ -115,7 +111,7 @@ namespace Wordler.Core
                 GetAllocations(StartMemory, $"After   Sort:" + Log());
                 PreviousGuesses.Add(new(guess.ToArray()));
 
-                if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count} words."); }
+                if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count + 1} words."); }
                 ///*GetAllocations(StartMemory, Log());*/
                 result = EvaluateResponse(guess, wordToGuess);
                 ///*GetAllocations(StartMemory, Log());*/
@@ -125,17 +121,19 @@ namespace Wordler.Core
                 ///*GetAllocations(StartMemory, Log());*/
                 foreach (var c in guessHash)
                 {
-                    _indices.Clear();
+                    Array.Clear(_indices);
+                    var arrayIndex = 0;
                     for (var index = 0; index < guess.Count; index++)
                     {
-                        if (guess[index] == c) { _indices.Add(index); }
+                        if (guess[index] == c) { _indices[arrayIndex] = index; arrayIndex++; }
                     }
 
-                    _letterCount = _indices.Count;
+                    _letterCount = arrayIndex;
                     var plausible = false;
 
-                    foreach (var i in _indices)
+                    for (var index = 0; index < arrayIndex; index++)
                     {
+                        var i = _indices[index];
                         if (result[i] != 'X') continue;
                         plausible = true;
                         _letterCount--;
