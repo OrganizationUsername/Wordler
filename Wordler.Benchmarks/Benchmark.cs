@@ -7,9 +7,9 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(10, 100)]
+    [Params( 10)]
     public int Count { get; set; }
-
+    public SwearSolver ss { get; set; }
     private List<string> _allWords = new();
     private List<string> _randomWords = new();
     [GlobalSetup]
@@ -18,6 +18,7 @@ public class Benchmark
         _allWords = Solver.GetLines();
         var ran = new Random(2);
         _randomWords = _allWords.OrderBy(l => ran.NextDouble()).Take(Count).ToList();
+        ss = new SwearSolver();
     }
 
     //[Benchmark]
@@ -47,6 +48,13 @@ public class Benchmark
             sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
         }
         return sb.ToString();
+    }
+
+    [Benchmark]
+    public string SwearSolver()
+    {
+        ss.Run(Count);
+        return "";
     }
 
 }
