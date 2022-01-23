@@ -2,6 +2,7 @@
 
 public class SwearSolver
 {
+    //Inspired by: https://langproc.substack.com/p/information-theoretic-analysis-of
     private string[][] wordlist;
     private Dictionary<char, HashSet<string>>[] map;
     private Dictionary<char, HashSet<string>>[][] directMap;
