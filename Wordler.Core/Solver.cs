@@ -54,7 +54,7 @@ namespace Wordler.Core
             var winningIndex = 0;
 
 
-            GetAllocations(StartMemory, $"Before  Loop:" + Log());
+            //GetAllocations(StartMemory, $"Before  Loop:" + Log());
 
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
@@ -67,8 +67,7 @@ namespace Wordler.Core
                 ///*GetAllocations(StartMemory, Log());*/
                 if (!wordList.Any()) return Array.Empty<char>();
 
-
-                GetAllocations(StartMemory, $"Before  Sort:" + Log());
+                //GetAllocations(StartMemory, $"Before  Sort:" + Log());
 
                 winningIndex = 0;
                 runningDiversity = 0;
@@ -112,7 +111,7 @@ namespace Wordler.Core
 
                 guess = mostDiverseWord.ToList();
 
-                GetAllocations(StartMemory, $"After   Sort:" + Log());
+                //GetAllocations(StartMemory, $"After   Sort:" + Log());
 
                 if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count + 1} words."); }
                 ///*GetAllocations(StartMemory, Log());*/
@@ -227,11 +226,9 @@ namespace Wordler.Core
                 var word = wordList[i];
                 if (word is null) continue;
                 for (var index = 0; index < knownPositionDictionary.Length; index++)
-            {
-                var n = knownPositionDictionary[index];
-                if (n is default(char)) { continue; }
-
-    
+                {
+                    var n = knownPositionDictionary[index];
+                    if (n is default(char)) { continue; }
                     if (word[index] != n)
                     {
                         wordList.RemoveAt(i);
