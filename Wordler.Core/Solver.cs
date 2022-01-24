@@ -13,7 +13,6 @@ namespace Wordler.Core
         public const char BadPosition = 'Y';
         public const char Bad = 'X';
 
-
         public static List<string> GetLines()
         {
             return File.ReadAllLines("FiveLetterWords.txt").ToList();
@@ -53,9 +52,6 @@ namespace Wordler.Core
             var currentDiversity = 0;
             var winningIndex = 0;
 
-
-            //GetAllocations(StartMemory, $"Before  Loop:" + Log());
-
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
                 PrunePossibleWords(wordList, requiredLettersDictionary, knownPosition, maxAllowedLetters, forbiddenLetterPositions);
@@ -74,9 +70,9 @@ namespace Wordler.Core
                 mostDiverseWord = default;
                 for (var index = 0; index < wordList.Count; index++)
                 {
-                    Array.Clear(diversityCharacters);
                     var word = wordList[index];
                     if (word is null) continue;
+                    Array.Clear(diversityCharacters);
                     for (var i = 0; i < word.Length; i++)
                     {
                         var c = word[i];
@@ -106,16 +102,16 @@ namespace Wordler.Core
                 if (mostDiverseWord is null)
                 {
                     mostDiverseWord = wordList[winningIndex];
-                    wordList.RemoveAt(winningIndex);
+                    wordList[winningIndex] = null;
                 }
 
                 guess = mostDiverseWord.ToList();
 
                 //GetAllocations(StartMemory, $"After   Sort:" + Log());
 
-                if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count + 1} words."); }
+                if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count(c => c is not null) + 1} words."); }
                 ///*GetAllocations(StartMemory, Log());*/
-                result = EvaluateResponse(guess, wordToGuess);
+                result = EvaluateResponse(mostDiverseWord, wordToGuess);
                 ///*GetAllocations(StartMemory, Log());*/
                 if (result.All(c => c == ' ')) { continue; }
 
@@ -181,7 +177,6 @@ namespace Wordler.Core
                         knownPosition[i] = guess[i];
                     }
                 }
-                ///*GetAllocations(StartMemory, Log());*/
                 guessesRemaining1--;
                 if (outPut)
                 {
@@ -207,21 +202,18 @@ namespace Wordler.Core
             {
                 var word = wordList[i];
                 if (word is null) continue;
-                for (var index = 0; index < necessaryLetters.Count && word is not null; index++)
+                for (var index = 0; index < necessaryLetters.Count; index++)
                 {
                     var n = necessaryLetters[index];
 
                     if (!word.Contains(n))
                     {
                         wordList[i] = null;
+                        word = null;
                         break;
                     }
                 }
-            }
 
-            for (var i = wordList.Count - 1; i >= 0; i--)
-            {
-                var word = wordList[i];
                 if (word is null) continue;
                 for (var index = 0; index < knownPositionDictionary.Length; index++)
                 {
@@ -229,18 +221,13 @@ namespace Wordler.Core
                     if (n is default(char)) { continue; }
                     if (word[index] != n)
                     {
+                        word = null;
                         wordList[i] = null;
                         break;
                     }
                 }
-            }
 
-            //GetAllocations(tempStartMemory, Log());
-            for (var i = wordList.Count - 1; i >= 0; i--)
-            {
-                var word = wordList[i];
                 if (word is null) continue;
-
                 for (var index = 0; index < forbiddenLetters.Length; index++)
                 {
                     var n = forbiddenLetters[index];
@@ -252,35 +239,31 @@ namespace Wordler.Core
 
                     if (count > n)
                     {
+                        word = null;
                         wordList[i] = null;
                         break;
                     }
                 }
-            }
 
-            for (var i = wordList.Count - 1; i >= 0; i--)
-            {
-                var word = wordList[i];
                 if (word is null) continue;
                 for (var n = 0; n < forbiddenLetterPositions.Length; n++)
                 {
-                    if (forbiddenLetterPositions[n].Contains(wordList[i][n]))
+                    if (forbiddenLetterPositions[n].Contains(word[n]))
                     {
+                        word = null;
                         wordList[i] = null;
                         break;
                     }
                 }
             }
-            //GetAllocations(StartMemory, Log());
         }
 
-        public char[] EvaluateResponse(List<char> guessLetters, string targetWord)
+        public char[] EvaluateResponse(string guessLetters, string targetWord)
         {
-            ///*GetAllocations(StartMemory, Log());*/
-            var result = new char[] { ' ', ' ', ' ', ' ', ' ' };
-            if (guessLetters.Count != 5) return Array.Empty<char>();
-            var answers = targetWord.ToList();
-            ///*GetAllocations(StartMemory, Log());*/
+            var result = new[] { ' ', ' ', ' ', ' ', ' ' };
+            if (guessLetters.Length != 5) return Array.Empty<char>();
+            var answers = targetWord.ToArray();
+
             for (var i = 0; i < 5; i++)
             {
                 if (guessLetters[i] == targetWord[i])
@@ -289,11 +272,22 @@ namespace Wordler.Core
                     answers[i] = ' ';
                 }
             }
-            ///*GetAllocations(StartMemory, Log());*/
+
             for (var i = 0; i < 5; i++)
             {
                 if (result[i] != ' ') { continue; }
-                var index = answers.FindIndex(x => x == guessLetters[i]);
+
+                var index = -1;
+
+                for (var index1 = 0; index1 < answers.Length; index1++)
+                {
+                    if (answers[index1] == guessLetters[i])
+                    {
+                        index = index1;
+                        break;
+                    }
+                }
+
                 if (index == -1)
                 {
                     result[i] = 'X';

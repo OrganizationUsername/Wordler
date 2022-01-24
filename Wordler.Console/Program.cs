@@ -33,6 +33,7 @@ var possibles = oneTimeList.ToList();
 Solver.GetAllocations(startMemory, "Before  Loop: " + Solver.Log());
 
 startMemory = GC.GetAllocatedBytesForCurrentThread();
+Solver solver = new Solver();
 for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
@@ -48,7 +49,6 @@ for (var s = 0; s < numberToTake; s++)
     {
         Console.WriteLine(answerWord);
     }
-    Solver solver = new Solver();
 
     var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut); // 21_280 bytes allocated
 
@@ -59,7 +59,7 @@ for (var s = 0; s < numberToTake; s++)
     {
         if (success) { Console.WriteLine($"Good job."); }
         else { Console.WriteLine($"Failure."); }
-        if (possibles.Count < 100) { Console.WriteLine($"{string.Join(", ", possibles)}"); }
+        if (possibles.Count(c => string.IsNullOrEmpty(c)) < 100) { Console.WriteLine($"{string.Join(", ", possibles.Where(c => c is not null))}"); }
     }
 }
 

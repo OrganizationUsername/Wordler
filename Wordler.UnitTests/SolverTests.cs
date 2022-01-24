@@ -17,12 +17,12 @@ public class SolverTests
     }
 
     [Fact]
-    public void Test1000Words_ToList()
+    public void Test10Words_OK()
     {
-        var Count = 10;
+        var count = 10;
 
         var ran = new Random(2);
-        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(Count).ToList();
+        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(count).ToList();
         var sb = new StringBuilder();
         var str = "";
         foreach (var s in randomWords)
@@ -31,9 +31,25 @@ public class SolverTests
             Solver solver = new Solver();
             sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
         }
-        //System.Console.WriteLine(string.Join(", ", randomWords));
-        //System.Console.WriteLine(sb.ToString());
         Assert.Equal("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG", sb.ToString());
+    }
+
+    [Fact]
+    public void Test100Words_Bad()
+    {
+        var count = 100;
+
+        var ran = new Random(2);
+        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(count).ToList();
+        var sb = new StringBuilder();
+        var str = "";
+        foreach (var s in randomWords)
+        {
+            var reloadableWords = WordsList.ToList();
+            Solver solver = new Solver();
+            sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
+        }
+        Assert.Contains(sb.ToString(), s => s != 'G');
     }
 
     [Fact]
@@ -47,7 +63,7 @@ public class SolverTests
     {
         var desiredWord = "asdfa";
         var guessWord = "asdfa";
-        var result = _solver.EvaluateResponse(guessWord.ToList(), desiredWord);
+        var result = _solver.EvaluateResponse(guessWord, desiredWord);
 
         Assert.Equal("GGGGG", new(result.ToArray()));
     }
@@ -57,7 +73,7 @@ public class SolverTests
     {
         var desiredWord = "asdfa";
         var guessWord = "asdfx";
-        var result = _solver.EvaluateResponse(guessWord.ToList(), desiredWord);
+        var result = _solver.EvaluateResponse(guessWord, desiredWord);
 
         Assert.NotEqual("GGGGG", new string(result.ToArray()));
     }
@@ -76,8 +92,8 @@ public class SolverTests
             Array.Empty<char>(),
             Array.Empty<int>(),
             Array.Empty<List<char>>());
-        Assert.Equal(1, wordList.Count);
-        Assert.Equal("robot", wordList.First());
+        Assert.Equal(1, wordList.Count(x => x is not null));
+        Assert.Equal("robot", wordList.First(x => x is not null));
     }
 
     [Fact]
@@ -94,8 +110,8 @@ public class SolverTests
             knownPositions,
             Array.Empty<int>(),
             Array.Empty<List<char>>());
-        Assert.Equal(1, wordList.Count);
-        Assert.Equal("robot", wordList.First());
+        Assert.Equal(1, wordList.Count(x => x is not null));
+        Assert.Equal("robot", wordList.First(x => x is not null));
     }
 
     [Fact]
@@ -130,8 +146,8 @@ public class SolverTests
             Array.Empty<char>(),
             Array.Empty<int>(),
             forbiddenLetterPositions);
-        Assert.Equal(1, wordList.Count);
-        Assert.Equal("robot", wordList.First());
+        Assert.Equal(1, wordList.Count(x => x is not null));
+        Assert.Equal("robot", wordList.First(x => x is not null));
     }
 
 }
