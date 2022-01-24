@@ -76,11 +76,11 @@ public class SwearSolver
             run = 0;
         }
 
-        var prompt = wordlist[run][rand.Next() % wordlist.Length];
+        var prompt = wordlist[run][rand.Next() % wordlist[run].Length];
         var nextGuessPool = wordlist[run].ToHashSet();
         var correct = new char[5];
         var proximate = new HashSet<char>();
-        var guess = wordlist[run][rand.Next() % wordlist.Length];
+        var guess = wordlist[run][rand.Next() % wordlist[run].Length];
         var attempt = 1;
 
         while (!guess.Equals(prompt) || attempt == 7)
