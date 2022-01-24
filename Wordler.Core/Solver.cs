@@ -111,6 +111,7 @@ namespace Wordler.Core
                 {
                     mostDiverseWord = wordList[winningIndex];
                     wordList[winningIndex] = null;
+                    maxDiversity = Math.Min(maxDiversity, runningDiversity);
                 }
 
                 guess = mostDiverseWord.ToList();
@@ -201,7 +202,9 @@ namespace Wordler.Core
             int[] forbiddenLetters,
             List<char>[] forbiddenLetterPositions)
         {
-
+            int lhs;
+            int toCompare = -1;
+            int count;
             List<char> necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
             //var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
             //GetAllocations(tempStartMemory, Log());
@@ -250,10 +253,12 @@ namespace Wordler.Core
                 for (int index = 0; index < forbiddenLetters.Length; index++)
                 {
                     int n = forbiddenLetters[index];
-                    int count = 0;
+                    count = 0;
+                    toCompare = index + 'a';
                     for (int j = 0; j < word.Length; j++)
                     {
-                        if (word[j] == index + 'a')
+                        lhs = word[j];
+                        if (lhs == toCompare)
                         {
                             count++;
                         }

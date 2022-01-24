@@ -7,7 +7,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(/*1,*/ 10/*, 100*/)]
+    [Params(1, 10, 100)]
     public int Count { get; set; }
     public SwearSolver ss { get; set; }
     public SwearSolver ssp { get; set; }
