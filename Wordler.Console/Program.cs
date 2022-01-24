@@ -3,6 +3,21 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Wordler.Core;
+/*
+ToDo: Make sure I'm doing all of this:
+- create a Set<> per letter (or an index per letter per position)
+- pick a word
+- exclude all Set<> for each discarded letter
+- exclude all Set<> for each yellow letter on THAT position
+- exclude all "per letter set" that don't have same green match
+- find all set from "untried letter" that contains all match Set or yellow letter
+- find intersection
+- use the word with the most unused letter but where each letter match possible condition abode
+
+idea: maximize "un-used letter" that still have match on yellow/green letter
+ */
+
+
 
 var outPut = true;
 long startMemory = GC.GetAllocatedBytesForCurrentThread();
