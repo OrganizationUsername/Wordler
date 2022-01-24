@@ -18,10 +18,10 @@ var permanentList = oneTimeList.ToList();
 
 var human = true;
 Console.WriteLine($"Input number of words to solve. -1 for all words.");
-var numberString = Console.ReadLine();
+//var numberString = Console.ReadLine();
 
-var numberToTake = int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
-if (numberString == "-1") numberToTake = oneTimeList.Count - 1;
+var numberToTake = 100;// int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
+//if (numberString == "-1") numberToTake = oneTimeList.Count - 1;
 var successes = 0;
 
 var sw = new Stopwatch();
