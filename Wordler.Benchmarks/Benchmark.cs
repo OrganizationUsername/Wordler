@@ -45,7 +45,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearSolverParallel()
     {
         ssp.Run(Count, true);

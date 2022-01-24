@@ -75,11 +75,11 @@ namespace Wordler.Core
                 for (var index = 0; index < wordList.Count; index++)
                 {
                     Array.Clear(diversityCharacters);
-                    var g = wordList[index];
-                    if (g is null) continue;
-                    for (var i = 0; i < g.Length; i++)
+                    var word = wordList[index];
+                    if (word is null) continue;
+                    for (var i = 0; i < word.Length; i++)
                     {
-                        var c = g[i];
+                        var c = word[i];
                         diversityCharacters[c - 'a']++;
                     }
 
@@ -94,10 +94,10 @@ namespace Wordler.Core
                     {
                         winningIndex = index;
                         runningDiversity = currentDiversity;
-                        mostDiverseWord = g;
+                        mostDiverseWord = word;
                         if (currentDiversity == maxDiversity)
                         {
-                            wordList.RemoveAt(winningIndex);
+                            word = null;
                             break;
                         }
                     }
@@ -198,29 +198,27 @@ namespace Wordler.Core
             int[] forbiddenLetters,
             List<char>[] forbiddenLetterPositions)
         {
-            //ToDo: Some of the heuristics don't need to be run.
-            //i.e. : The 1st character cannot be 'a', 'e', and 'o', then later the 1st character is 'r'.
-            //Right now, it iterates through the list for the 1st heuristic even though it's already been pruned.
 
             var necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
-            var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
+            //var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
             //GetAllocations(tempStartMemory, Log());
 
             for (var i = wordList.Count - 1; i >= 0; i--)
             {
                 var word = wordList[i];
                 if (word is null) continue;
-                for (var index = 0; index < necessaryLetters.Count; index++)
+                for (var index = 0; index < necessaryLetters.Count && word is not null; index++)
                 {
                     var n = necessaryLetters[index];
 
                     if (!word.Contains(n))
                     {
-                        wordList.RemoveAt(i);
+                        wordList[i] = null;
                         break;
                     }
                 }
             }
+
             for (var i = wordList.Count - 1; i >= 0; i--)
             {
                 var word = wordList[i];
@@ -231,7 +229,7 @@ namespace Wordler.Core
                     if (n is default(char)) { continue; }
                     if (word[index] != n)
                     {
-                        wordList.RemoveAt(i);
+                        wordList[i] = null;
                         break;
                     }
                 }
@@ -255,6 +253,7 @@ namespace Wordler.Core
                     if (count > n)
                     {
                         wordList[i] = null;
+                        break;
                     }
                 }
             }
@@ -267,7 +266,7 @@ namespace Wordler.Core
                 {
                     if (forbiddenLetterPositions[n].Contains(wordList[i][n]))
                     {
-                        wordList.RemoveAt(i);
+                        wordList[i] = null;
                         break;
                     }
                 }
