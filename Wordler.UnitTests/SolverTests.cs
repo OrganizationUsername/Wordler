@@ -77,6 +77,7 @@ public class SolverTests
             Array.Empty<int>(),
             Array.Empty<List<char>>());
         Assert.Equal(1, wordList.Count);
+        Assert.Equal("robot", wordList.First());
     }
 
     [Fact]
@@ -111,7 +112,8 @@ public class SolverTests
             Array.Empty<char>(),
             forbiddenLetters,
             Array.Empty<List<char>>());
-        Assert.Equal(1, wordList.Count);
+        Assert.Equal(1, wordList.Count(x => x is not null));
+        Assert.Equal("robot", wordList.First(x => x is not null));
     }
 
     [Fact]
@@ -129,6 +131,7 @@ public class SolverTests
             Array.Empty<int>(),
             forbiddenLetterPositions);
         Assert.Equal(1, wordList.Count);
+        Assert.Equal("robot", wordList.First());
     }
 
 }

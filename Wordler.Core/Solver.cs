@@ -77,6 +77,7 @@ namespace Wordler.Core
                 {
                     Array.Clear(diversityCharacters);
                     var g = wordList[index];
+                    if (g is null) continue;
                     for (var i = 0; i < g.Length; i++)
                     {
                         var c = g[i];
@@ -206,53 +207,48 @@ namespace Wordler.Core
             var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
             //GetAllocations(tempStartMemory, Log());
 
-            for (var index = 0; index < necessaryLetters.Count; index++)
+            for (var i = wordList.Count - 1; i >= 0; i--)
             {
-                var n = necessaryLetters[index];
-                for (var i = wordList.Count - 1; i >= 0; i--)
+                var word = wordList[i];
+                if (word is null) continue;
+                for (var index = 0; index < necessaryLetters.Count; index++)
                 {
-                    var word = wordList[i];
+                    var n = necessaryLetters[index];
+
                     if (!word.Contains(n))
                     {
                         wordList.RemoveAt(i);
+                        break;
                     }
                 }
-
-                //wordList.RemoveAll(p => !p.Contains(n));
             }
-
-            //GetAllocations(tempStartMemory, Log());
-
-            //foreach (var n in knownPositionDictionary)
-            //{
-            //    wordList.RemoveAll(p => p[n.Key] != n.Value);
-            //}
-
-            for (var index = 0; index < knownPositionDictionary.Length; index++)
+            for (var i = wordList.Count - 1; i >= 0; i--)
+            {
+                var word = wordList[i];
+                if (word is null) continue;
+                for (var index = 0; index < knownPositionDictionary.Length; index++)
             {
                 var n = knownPositionDictionary[index];
                 if (n is default(char)) { continue; }
 
-                for (var i = wordList.Count - 1; i >= 0; i--)
-                {
-                    var word = wordList[i];
+    
                     if (word[index] != n)
                     {
                         wordList.RemoveAt(i);
+                        break;
                     }
                 }
             }
 
             //GetAllocations(tempStartMemory, Log());
-
-            for (var index = 0; index < forbiddenLetters.Length; index++)
+            for (var i = wordList.Count - 1; i >= 0; i--)
             {
-                var n = forbiddenLetters[index];
-                //wordList.RemoveAll(p => p.Count(c => c == n.Key) > n.Value);
+                var word = wordList[i];
+                if (word is null) continue;
 
-                for (var i = wordList.Count - 1; i >= 0; i--)
+                for (var index = 0; index < forbiddenLetters.Length; index++)
                 {
-                    var word = wordList[i];
+                    var n = forbiddenLetters[index];
                     var count = 0;
                     for (var j = 0; j < word.Length; j++)
                     {
@@ -261,21 +257,21 @@ namespace Wordler.Core
 
                     if (count > n)
                     {
-                        wordList.RemoveAt(i);
+                        wordList[i] = null;
                     }
                 }
             }
 
-            //GetAllocations(tempStartMemory, Log());
-
-            for (var n = 0; n < forbiddenLetterPositions.Length; n++)
+            for (var i = wordList.Count - 1; i >= 0; i--)
             {
-                for (var i = wordList.Count - 1; i >= 0; i--)
+                var word = wordList[i];
+                if (word is null) continue;
+                for (var n = 0; n < forbiddenLetterPositions.Length; n++)
                 {
-                    var word = wordList[i];
                     if (forbiddenLetterPositions[n].Contains(wordList[i][n]))
                     {
                         wordList.RemoveAt(i);
+                        break;
                     }
                 }
             }

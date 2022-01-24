@@ -50,9 +50,9 @@ for (var s = 0; s < numberToTake; s++)
     }
     Solver solver = new Solver();
 
-    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut); // 9_538_304 bytes allocated
+    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut); // 21_280 bytes allocated
 
-    Solver.GetAllocations(startMemory, "After  Guess: " + Solver.Log());
+    //Solver.GetAllocations(startMemory, "After  Guess: " + Solver.Log());
     var success = result.All(x => x == 'G');
     if (success) { successes++; }
     if (outPut)
