@@ -7,25 +7,24 @@ namespace Wordler.Core
     {
         private readonly int[] _indices = new int[5];
         private int _letterCount;
-        private readonly Dictionary<char, int> tempDictionary = new();
-        private long StartMemory;
+        private readonly Dictionary<char, int> _tempDictionary = new();
+        private long _startMemory;
         private const char Good = 'G';
         private const char BadPosition = 'Y';
         private const char Bad = 'X';
-        private char[] result = new char[] { ' ', ' ', ' ', ' ', ' ' };
-        private List<char> guess;
-        private int maxDiversity = 5;
-        private readonly int[] diversityCharacters = new int[26];
-        private string mostDiverseWord = null;
-        private int runningDiversity = 0;
-        private int currentDiversity = 0;
-        private int winningIndex = 0;
-        private char[] knownPosition = new char[5];
-        private readonly Dictionary<char, int> requiredLettersDictionary = new Dictionary<char, int>();
-        private readonly int[] requiredLetters = new int[26];
-        private int[] maxAllowedLetters = new int[26];
-        private List<char>[] forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
-
+        private char[] _result = new char[] { ' ', ' ', ' ', ' ', ' ' };
+        private List<char> _guess;
+        private int _maxDiversity = 5;
+        private readonly int[] _diversityCharacters = new int[26];
+        private string _mostDiverseWord;
+        private int _runningDiversity;
+        private int _currentDiversity;
+        private int _winningIndex;
+        private char[] _knownPosition = new char[5];
+        private readonly Dictionary<char, int> _requiredLettersDictionary = new Dictionary<char, int>();
+        private readonly int[] _requiredLetters = new int[26];
+        private int[] _maxAllowedLetters = new int[26];
+        private List<char>[] _forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
         public static List<string> GetLines()
         {
@@ -46,57 +45,60 @@ namespace Wordler.Core
 
         public char[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
         {
-            StartMemory = GC.GetAllocatedBytesForCurrentThread();
-            result = new char[] { ' ', ' ', ' ', ' ', ' ' };
-            Array.Clear(diversityCharacters);
-            requiredLettersDictionary.Clear();
-            for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0); }
-            Array.Clear(requiredLetters);
-            Array.Clear(knownPosition);
-            Array.Clear(maxAllowedLetters);
-            for (var i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
-            forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
+            _startMemory = GC.GetAllocatedBytesForCurrentThread();
+            _result = new char[] { ' ', ' ', ' ', ' ', ' ' };
+            Array.Clear(_diversityCharacters);
+            _requiredLettersDictionary.Clear();
+            for (var c = 'a'; c <= 'z'; c++) { _requiredLettersDictionary.Add(c, 0); }
+            Array.Clear(_requiredLetters);
+            Array.Clear(_knownPosition);
+            Array.Clear(_maxAllowedLetters);
+            for (var i = 0; i < _maxAllowedLetters.Length; i++) { _maxAllowedLetters[i] = int.MaxValue; }
+            _forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
-            while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
+            while (guessesRemaining1 > 0 && (_result.Any(x => x != 'G')))
             {
-                PrunePossibleWords(wordList, requiredLettersDictionary, knownPosition, maxAllowedLetters, forbiddenLetterPositions);
-                knownPosition = new char[5];
-                forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
-                maxAllowedLetters = new int[26];
-                for (var i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
+                if (guessesRemaining1 < 6)
+                {
+                    PrunePossibleWords(wordList, _requiredLettersDictionary, _knownPosition, _maxAllowedLetters, _forbiddenLetterPositions);
+                }
+                _knownPosition = new char[5];
+                _forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
+                _maxAllowedLetters = new int[26];
+                for (var i = 0; i < _maxAllowedLetters.Length; i++) { _maxAllowedLetters[i] = int.MaxValue; }
 
                 ///*GetAllocations(StartMemory, Log());*/
                 if (!wordList.Any()) return Array.Empty<char>();
 
                 //GetAllocations(StartMemory, $"Before  Sort:" + Log());
 
-                winningIndex = 0;
-                runningDiversity = 0;
-                mostDiverseWord = default;
+                _winningIndex = 0;
+                _runningDiversity = 0;
+                _mostDiverseWord = default;
                 for (var index = 0; index < wordList.Count; index++)
                 {
                     var word = wordList[index];
                     if (word is null) continue;
-                    Array.Clear(diversityCharacters);
+                    Array.Clear(_diversityCharacters);
                     for (var i = 0; i < word.Length; i++)
                     {
                         var c = word[i];
-                        diversityCharacters[c - 'a']++;
+                        _diversityCharacters[c - 'a']++;
                     }
 
-                    currentDiversity = 0;
-                    for (var i = 0; i < diversityCharacters.Length; i++)
+                    _currentDiversity = 0;
+                    for (var i = 0; i < _diversityCharacters.Length; i++)
                     {
-                        var c = diversityCharacters[i];
-                        if (c != 0) currentDiversity++;
+                        var c = _diversityCharacters[i];
+                        if (c != 0) _currentDiversity++;
                     }
 
-                    if (currentDiversity > runningDiversity)
+                    if (_currentDiversity > _runningDiversity)
                     {
-                        winningIndex = index;
-                        runningDiversity = currentDiversity;
-                        mostDiverseWord = word;
-                        if (currentDiversity == maxDiversity)
+                        _winningIndex = index;
+                        _runningDiversity = _currentDiversity;
+                        _mostDiverseWord = word;
+                        if (_currentDiversity == _maxDiversity)
                         {
                             word = null;
                             break;
@@ -104,32 +106,32 @@ namespace Wordler.Core
                     }
                 }
 
-                if (mostDiverseWord is null)
+                if (_mostDiverseWord is null)
                 {
-                    mostDiverseWord = wordList[winningIndex];
-                    wordList[winningIndex] = null;
-                    maxDiversity = Math.Min(maxDiversity, runningDiversity);
+                    _mostDiverseWord = wordList[_winningIndex];
+                    wordList[_winningIndex] = null;
+                    _maxDiversity = Math.Min(_maxDiversity, _runningDiversity);
                 }
 
-                guess = mostDiverseWord.ToList();
+                _guess = _mostDiverseWord.ToList();
 
                 //GetAllocations(StartMemory, $"After   Sort:" + Log());
 
-                if (outPut) { Console.WriteLine($"RoboGuess: {new(guess.ToArray())} out of {wordList.Count(c => c is not null) + 1} words."); }
+                if (outPut) { Console.WriteLine($"RoboGuess: {new(_guess.ToArray())} out of {wordList.Count(c => c is not null) + 1} words."); }
                 ///*GetAllocations(StartMemory, Log());*/
-                result = EvaluateResponse(mostDiverseWord, wordToGuess);
+                _result = EvaluateResponse(_mostDiverseWord, wordToGuess);
                 ///*GetAllocations(StartMemory, Log());*/
-                if (result.All(c => c == ' ')) { continue; }
+                if (_result.All(c => c == ' ')) { continue; }
 
-                var guessHash = guess.ToHashSet(); //ToDo: Replace this with code above that creates an array of unique characters
+                var guessHash = _guess.ToHashSet(); //ToDo: Replace this with code above that creates an array of unique characters
                 ///*GetAllocations(StartMemory, Log());*/
                 foreach (var c in guessHash)
                 {
                     Array.Clear(_indices);
                     var arrayIndex = 0;
-                    for (var index = 0; index < guess.Count; index++)
+                    for (var index = 0; index < _guess.Count; index++)
                     {
-                        if (guess[index] == c) { _indices[arrayIndex] = index; arrayIndex++; }
+                        if (_guess[index] == c) { _indices[arrayIndex] = index; arrayIndex++; }
                     }
 
                     _letterCount = arrayIndex;
@@ -138,58 +140,58 @@ namespace Wordler.Core
                     for (var index = 0; index < arrayIndex; index++)
                     {
                         var i = _indices[index];
-                        if (result[i] != Bad) continue;
+                        if (_result[i] != Bad) continue;
                         plausible = true;
                         _letterCount--;
                     }
 
                     if (plausible && _letterCount >= 0)
                     {
-                        maxAllowedLetters[c - 'a'] = Math.Min(maxAllowedLetters[c - 'a'], _letterCount);
+                        _maxAllowedLetters[c - 'a'] = Math.Min(_maxAllowedLetters[c - 'a'], _letterCount);
                     }
                 }
                 ///*GetAllocations(StartMemory, Log());*/
-                for (var i = 0; i < result.Length; i++)
+                for (var i = 0; i < _result.Length; i++)
                 {
-                    if (result[i] != Good)
+                    if (_result[i] != Good)
                     {
-                        forbiddenLetterPositions[i].Add(guess[i]);
+                        _forbiddenLetterPositions[i].Add(_guess[i]);
                     }
                 }
-                tempDictionary.Clear();
+                _tempDictionary.Clear();
                 ///*GetAllocations(StartMemory, Log());*/
-                for (var i = 0; i < result.Length; i++)
+                for (var i = 0; i < _result.Length; i++)
                 {
-                    if (result[i] == BadPosition || result[i] == Good)
+                    if (_result[i] == BadPosition || _result[i] == Good)
                     {
-                        if (tempDictionary.ContainsKey(guess[i]))
+                        if (_tempDictionary.ContainsKey(_guess[i]))
                         {
-                            tempDictionary[guess[i]]++;
+                            _tempDictionary[_guess[i]]++;
                         }
                         else
                         {
-                            tempDictionary.TryAdd(guess[i], 1);
+                            _tempDictionary.TryAdd(_guess[i], 1);
                         }
                     }
 
-                    foreach ((var key, var value) in tempDictionary)
+                    foreach ((var key, var value) in _tempDictionary)
                     {
-                        requiredLetters[key - 'a'] = Math.Max(requiredLetters[key - 'a'], value);
-                        requiredLettersDictionary[key] = Math.Max(requiredLettersDictionary[key], value);
+                        _requiredLetters[key - 'a'] = Math.Max(_requiredLetters[key - 'a'], value);
+                        _requiredLettersDictionary[key] = Math.Max(_requiredLettersDictionary[key], value);
                     }
 
-                    if (result[i] == Good)
+                    if (_result[i] == Good)
                     {
-                        knownPosition[i] = guess[i];
+                        _knownPosition[i] = _guess[i];
                     }
                 }
                 guessesRemaining1--;
                 if (outPut)
                 {
-                    Console.WriteLine(new string(result.ToArray()));
+                    Console.WriteLine(new string(_result.ToArray()));
                 }
             }
-            return result;
+            return _result;
         }
 
         public void PrunePossibleWords(
