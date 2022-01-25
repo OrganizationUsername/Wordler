@@ -7,7 +7,7 @@ namespace Wordler.Core
     {
         private readonly int[] _indices = new int[5];
         private int _letterCount;
-        private Dictionary<char, int> tempDictionary = new();
+        private readonly Dictionary<char, int> tempDictionary = new();
         private long StartMemory;
         private const char Good = 'G';
         private const char BadPosition = 'Y';
@@ -15,14 +15,14 @@ namespace Wordler.Core
         private char[] result = new char[] { ' ', ' ', ' ', ' ', ' ' };
         private List<char> guess;
         private int maxDiversity = 5;
-        private int[] diversityCharacters = new int[26];
+        private readonly int[] diversityCharacters = new int[26];
         private string mostDiverseWord = null;
         private int runningDiversity = 0;
         private int currentDiversity = 0;
         private int winningIndex = 0;
         private char[] knownPosition = new char[5];
-        private Dictionary<char, int> requiredLettersDictionary = new Dictionary<char, int>();
-        private int[] requiredLetters = new int[26];
+        private readonly Dictionary<char, int> requiredLettersDictionary = new Dictionary<char, int>();
+        private readonly int[] requiredLetters = new int[26];
         private int[] maxAllowedLetters = new int[26];
         private List<char>[] forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
@@ -252,14 +252,21 @@ namespace Wordler.Core
                     var n = forbiddenLetters[index];
                     count = 0;
                     toCompare = index + 'a';
-                    for (var j = 0; j < word.Length; j++)
-                    {
-                        lhs = word[j];
-                        if (lhs == toCompare)
-                        {
-                            count++;
-                        }
-                    }
+
+                    if (word[0] == toCompare) count++;
+                    if (word[1] == toCompare) count++;
+                    if (word[2] == toCompare) count++;
+                    if (word[3] == toCompare) count++;
+                    if (word[4] == toCompare) count++;
+
+                    //for (var j = 0; j < word.Length; j++)
+                    //{
+                    //    lhs = word[j];
+                    //    if (lhs == toCompare)
+                    //    {
+                    //        count++;
+                    //    }
+                    //}
 
                     if (count > n)
                     {

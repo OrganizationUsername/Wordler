@@ -17,9 +17,7 @@ ToDo: Make sure I'm doing all of this:
 idea: maximize "un-used letter" that still have match on yellow/green letter
  */
 
-
-
-var outPut = true;
+var outPut = false;
 long startMemory = GC.GetAllocatedBytesForCurrentThread();
 if (!File.Exists("FiveLetterWords.txt"))
 {

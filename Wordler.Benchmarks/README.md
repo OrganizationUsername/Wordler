@@ -1,4 +1,10 @@
-Current:
+Current (Partial):
+|      Method | Count |     Mean |    Error |   StdDev | Ratio | RatioSD |   Gen 0 |   Gen 1 |   Gen 2 | Allocated |
+|------------ |------ |---------:|---------:|---------:|------:|--------:|--------:|--------:|--------:|----------:|
+|  NaiveSolve |    10 | 23.41 ms | 0.059 ms | 0.055 ms |  1.00 |    0.00 |       - |       - |       - |    260 KB |
+| SwearSolver |    10 | 22.15 ms | 0.431 ms | 0.443 ms |  0.95 |    0.02 | 93.7500 | 93.7500 | 93.7500 |  5,151 KB |
+
+Previous:
 |      Method | Count |       Mean |     Error |    StdDev | Ratio | RatioSD |   Gen 0 |   Gen 1 |   Gen 2 | Allocated |
 |------------ |------ |-----------:|----------:|----------:|------:|--------:|--------:|--------:|--------:|----------:|
 |  NaiveSolve |     1 |   2.614 ms | 0.0069 ms | 0.0057 ms |  1.00 |    0.00 | 15.6250 | 15.6250 | 15.6250 |    179 KB |
