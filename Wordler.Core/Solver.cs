@@ -34,8 +34,8 @@ namespace Wordler.Core
 
         public static void GetAllocations(long startMemory, string data)
         {
-            long endMemory = GC.GetAllocatedBytesForCurrentThread();
-            double temp = (endMemory - startMemory) / 1024.0 / 1024.0;
+            var endMemory = GC.GetAllocatedBytesForCurrentThread();
+            var temp = (endMemory - startMemory) / 1024.0 / 1024.0;
             Trace.WriteLine($"{data}: {endMemory} - {startMemory}= {Math.Round(temp, 3)} mb.");
         }
 
@@ -49,16 +49,13 @@ namespace Wordler.Core
             StartMemory = GC.GetAllocatedBytesForCurrentThread();
             result = new char[] { ' ', ' ', ' ', ' ', ' ' };
             Array.Clear(diversityCharacters);
-            forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
-            Array.Clear(knownPosition);
-            Array.Clear(requiredLetters);
-            Array.Clear(maxAllowedLetters);
-
             requiredLettersDictionary.Clear();
-            for (char c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0); }
+            for (var c = 'a'; c <= 'z'; c++) { requiredLettersDictionary.Add(c, 0); }
+            Array.Clear(requiredLetters);
+            Array.Clear(knownPosition);
             Array.Clear(maxAllowedLetters);
-            for (int i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
-
+            for (var i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
+            forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
             while (guessesRemaining1 > 0 && (result.Any(x => x != 'G')))
             {
@@ -66,7 +63,7 @@ namespace Wordler.Core
                 knownPosition = new char[5];
                 forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
                 maxAllowedLetters = new int[26];
-                for (int i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
+                for (var i = 0; i < maxAllowedLetters.Length; i++) { maxAllowedLetters[i] = int.MaxValue; }
 
                 ///*GetAllocations(StartMemory, Log());*/
                 if (!wordList.Any()) return Array.Empty<char>();
@@ -76,21 +73,21 @@ namespace Wordler.Core
                 winningIndex = 0;
                 runningDiversity = 0;
                 mostDiverseWord = default;
-                for (int index = 0; index < wordList.Count; index++)
+                for (var index = 0; index < wordList.Count; index++)
                 {
-                    string? word = wordList[index];
+                    var word = wordList[index];
                     if (word is null) continue;
                     Array.Clear(diversityCharacters);
-                    for (int i = 0; i < word.Length; i++)
+                    for (var i = 0; i < word.Length; i++)
                     {
-                        char c = word[i];
+                        var c = word[i];
                         diversityCharacters[c - 'a']++;
                     }
 
                     currentDiversity = 0;
-                    for (int i = 0; i < diversityCharacters.Length; i++)
+                    for (var i = 0; i < diversityCharacters.Length; i++)
                     {
-                        int c = diversityCharacters[i];
+                        var c = diversityCharacters[i];
                         if (c != 0) currentDiversity++;
                     }
 
@@ -124,23 +121,23 @@ namespace Wordler.Core
                 ///*GetAllocations(StartMemory, Log());*/
                 if (result.All(c => c == ' ')) { continue; }
 
-                HashSet<char> guessHash = guess.ToHashSet();
+                var guessHash = guess.ToHashSet(); //ToDo: Replace this with code above that creates an array of unique characters
                 ///*GetAllocations(StartMemory, Log());*/
-                foreach (char c in guessHash)
+                foreach (var c in guessHash)
                 {
                     Array.Clear(_indices);
-                    int arrayIndex = 0;
-                    for (int index = 0; index < guess.Count; index++)
+                    var arrayIndex = 0;
+                    for (var index = 0; index < guess.Count; index++)
                     {
                         if (guess[index] == c) { _indices[arrayIndex] = index; arrayIndex++; }
                     }
 
                     _letterCount = arrayIndex;
-                    bool plausible = false;
+                    var plausible = false;
 
-                    for (int index = 0; index < arrayIndex; index++)
+                    for (var index = 0; index < arrayIndex; index++)
                     {
-                        int i = _indices[index];
+                        var i = _indices[index];
                         if (result[i] != Bad) continue;
                         plausible = true;
                         _letterCount--;
@@ -152,7 +149,7 @@ namespace Wordler.Core
                     }
                 }
                 ///*GetAllocations(StartMemory, Log());*/
-                for (int i = 0; i < result.Length; i++)
+                for (var i = 0; i < result.Length; i++)
                 {
                     if (result[i] != Good)
                     {
@@ -161,7 +158,7 @@ namespace Wordler.Core
                 }
                 tempDictionary.Clear();
                 ///*GetAllocations(StartMemory, Log());*/
-                for (int i = 0; i < result.Length; i++)
+                for (var i = 0; i < result.Length; i++)
                 {
                     if (result[i] == BadPosition || result[i] == Good)
                     {
@@ -175,7 +172,7 @@ namespace Wordler.Core
                         }
                     }
 
-                    foreach ((char key, int value) in tempDictionary)
+                    foreach ((var key, var value) in tempDictionary)
                     {
                         requiredLetters[key - 'a'] = Math.Max(requiredLetters[key - 'a'], value);
                         requiredLettersDictionary[key] = Math.Max(requiredLettersDictionary[key], value);
@@ -200,22 +197,22 @@ namespace Wordler.Core
             Dictionary<char, int> requiredLetters,
             char[] knownPositionDictionary,
             int[] forbiddenLetters,
-            List<char>[] forbiddenLetterPositions)
+            IList<char>[] forbiddenLetterPositions)
         {
             int lhs;
-            int toCompare = -1;
+            var toCompare = -1;
             int count;
-            List<char> necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
+            var necessaryLetters = requiredLetters.Where(l => l.Value > 0).Select(l => l.Key).ToList();
             //var tempStartMemory = GC.GetAllocatedBytesForCurrentThread();
             //GetAllocations(tempStartMemory, Log());
 
-            for (int i = wordList.Count - 1; i >= 0; i--)
+            for (var i = wordList.Count - 1; i >= 0; i--)
             {
-                string? word = wordList[i];
+                var word = wordList[i];
                 if (word is null) continue;
-                for (int index = 0; index < necessaryLetters.Count; index++)
+                for (var index = 0; index < necessaryLetters.Count; index++)
                 {
-                    char n = necessaryLetters[index];
+                    var n = necessaryLetters[index];
 
                     if (!word.Contains(n))
                     {
@@ -226,9 +223,9 @@ namespace Wordler.Core
                 }
 
                 if (word is null) continue;
-                for (int index = 0; index < knownPositionDictionary.Length; index++)
+                for (var index = 0; index < knownPositionDictionary.Length; index++)
                 {
-                    char n = knownPositionDictionary[index];
+                    var n = knownPositionDictionary[index];
                     if (n is default(char)) { continue; }
                     if (word[index] != n)
                     {
@@ -239,7 +236,7 @@ namespace Wordler.Core
                 }
 
                 if (word is null) continue;
-                for (int n = 0; n < forbiddenLetterPositions.Length; n++)
+                for (var n = 0; n < forbiddenLetterPositions.Length; n++)
                 {
                     if (forbiddenLetterPositions[n].Contains(word[n]))
                     {
@@ -250,12 +247,12 @@ namespace Wordler.Core
                 }
 
                 if (word is null) continue;
-                for (int index = 0; index < forbiddenLetters.Length; index++)
+                for (var index = 0; index < forbiddenLetters.Length; index++)
                 {
-                    int n = forbiddenLetters[index];
+                    var n = forbiddenLetters[index];
                     count = 0;
                     toCompare = index + 'a';
-                    for (int j = 0; j < word.Length; j++)
+                    for (var j = 0; j < word.Length; j++)
                     {
                         lhs = word[j];
                         if (lhs == toCompare)
@@ -275,11 +272,11 @@ namespace Wordler.Core
 
         public char[] EvaluateResponse(string guessLetters, string targetWord)
         {
-            char[] result = new[] { ' ', ' ', ' ', ' ', ' ' };
+            var result = new[] { ' ', ' ', ' ', ' ', ' ' };
             if (guessLetters.Length != 5) return Array.Empty<char>();
-            char[] answers = targetWord.ToArray();
+            var answers = targetWord.ToArray();
 
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
                 if (guessLetters[i] == targetWord[i])
                 {
@@ -288,13 +285,13 @@ namespace Wordler.Core
                 }
             }
 
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
                 if (result[i] != ' ') { continue; }
 
-                int index = -1;
+                var index = -1;
 
-                for (int index1 = 0; index1 < answers.Length; index1++)
+                for (var index1 = 0; index1 < answers.Length; index1++)
                 {
                     if (answers[index1] == guessLetters[i])
                     {
