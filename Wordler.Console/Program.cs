@@ -29,7 +29,7 @@ if (!File.Exists("FiveLetterWords.txt"))
 }
 
 var oneTimeList = File.ReadAllLines("FiveLetterWords.txt").ToList();
-var permanentList = oneTimeList.ToList();
+var permanentList = oneTimeList.Select(c => c.ToCharArray()).ToList();
 
 var human = true;
 Console.WriteLine($"Input number of words to solve. -1 for all words.");
@@ -44,7 +44,7 @@ sw.Start();
 
 var rand = new Random(1);
 
-var possibles = oneTimeList.ToList();
+var possibles = oneTimeList.Select(c => c.ToCharArray()).ToList();
 Solver.GetAllocations(startMemory, "Before  Loop: " + Solver.Log());
 
 startMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -58,7 +58,6 @@ for (var s = 0; s < numberToTake; s++)
 
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
-    oneTimeList.Remove(answerWord);
     //answerWord = "oases";
     if (outPut)
     {
@@ -74,7 +73,7 @@ for (var s = 0; s < numberToTake; s++)
     {
         if (success) { Console.WriteLine($"Good job."); }
         else { Console.WriteLine($"Failure."); }
-        if (possibles.Count(c => string.IsNullOrEmpty(c)) < 100) { Console.WriteLine($"{string.Join(", ", possibles.Where(c => c is not null))}"); }
+        if (possibles.Count(c => c is not null) < 100) { Console.WriteLine($"{string.Join(", ", possibles.Where(c => c is not null))}"); }
     }
 }
 

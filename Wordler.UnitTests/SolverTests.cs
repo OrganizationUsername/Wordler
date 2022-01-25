@@ -22,15 +22,17 @@ public class SolverTests
         var count = 10;
 
         var ran = new Random(2);
-        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(count).ToList();
+        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(count).Select(c => c.ToCharArray()).ToList();
         var sb = new StringBuilder();
         var str = "";
-        foreach (var s in randomWords)
+        for (var index = 0; index < randomWords.Count; index++)
         {
-            var reloadableWords = WordsList.ToList();
+            char[] s = randomWords[index];
+            var reloadableWords = WordsList.Select(c => c.ToCharArray()).ToList();
             Solver solver = new Solver();
             sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
         }
+
         Assert.Equal("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG", sb.ToString());
     }
 
@@ -40,15 +42,17 @@ public class SolverTests
         var count = 100;
 
         var ran = new Random(2);
-        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(count).ToList();
+        var randomWords = WordsList.OrderBy(l => ran.NextDouble()).Take(count).Select(c => c.ToCharArray()).ToList();
         var sb = new StringBuilder();
         var str = "";
-        foreach (var s in randomWords)
+        for (var index = 0; index < randomWords.Count; index++)
         {
-            var reloadableWords = WordsList.ToList();
+            var s = randomWords[index];
+            var reloadableWords = WordsList.Select(c => c.ToCharArray()).ToList();
             Solver solver = new Solver();
             sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
         }
+
         Assert.Contains(sb.ToString(), s => s != 'G');
     }
 
@@ -61,8 +65,8 @@ public class SolverTests
     [Fact]
     public void EvaluatePerfectGuess_OK()
     {
-        var desiredWord = "asdfa";
-        var guessWord = "asdfa";
+        var desiredWord = "asdfa".ToCharArray();
+        var guessWord = "asdfa".ToCharArray();
         var result = _solver.EvaluateResponse(guessWord, desiredWord);
 
         Assert.Equal("GGGGG", new(result.ToArray()));
@@ -71,17 +75,17 @@ public class SolverTests
     [Fact]
     public void EvaluateBadGuess_OK()
     {
-        var desiredWord = "asdfa";
-        var guessWord = "asdfx";
+        var desiredWord = "asdfa".ToCharArray();
+        var guessWord = "asdfx".ToCharArray();
         var result = _solver.EvaluateResponse(guessWord, desiredWord);
 
-        Assert.NotEqual("GGGGG", new string(result.ToArray()));
+        Assert.NotEqual("GGGGG", new(result.ToArray()));
     }
 
     [Fact]
     public void PruneImpossibleWords_RequiredLetters_OK()
     {
-        var wordList = new List<string>() { "robot", "sabot", "dabot" };
+        var wordList = new List<char[]>() { "robot".ToCharArray(), "sabot".ToCharArray(), "dabot".ToCharArray() };
 
         var forbiddenLetters = new Dictionary<char, int> { { 'r', 1 } };
 
@@ -99,7 +103,7 @@ public class SolverTests
     [Fact]
     public void PruneImpossibleWords_KnownPositions_OK()
     {
-        var wordList = new List<string>() { "robot", "sabot", "darot" };
+        var wordList = new List<char[]>() { "robot".ToCharArray(), "sabot".ToCharArray(), "darot".ToCharArray() };
 
         var knownPositions = new char[] { 'r', default, default, default, default };
 
@@ -117,7 +121,7 @@ public class SolverTests
     [Fact]
     public void PruneImpossibleWords_ForbiddenLetters_OK()
     {
-        var wordList = new List<string>() { "robot", "sabot", "dabot" };
+        var wordList = new List<char[]>() { "robot".ToCharArray(), "sabot".ToCharArray(), "dabot".ToCharArray() };
 
         var forbiddenLetters = new int[] { 0 };
 
@@ -135,9 +139,9 @@ public class SolverTests
     [Fact]
     public void PruneImpossibleWords_ForbiddenLetterPosition_OK()
     {
-        var wordList = new List<string>() { "robot", "sabot", "radio" };
+        var wordList = new List<char[]>() { "robot".ToCharArray(), "sabot".ToCharArray(), "radio".ToCharArray() };
 
-        var forbiddenLetterPositions = new List<char>[] { new List<char>(), new List<char>() { 'a' }, new List<char>(), new List<char>(), new List<char>() };
+        var forbiddenLetterPositions = new List<char>[] { new(), new() { 'a' }, new(), new(), new() };
 
         Solver solver = new Solver();
         solver.PrunePossibleWords(

@@ -16,7 +16,7 @@ namespace Wordler.Core
         private List<char> guess;
         private int maxDiversity = 5;
         private int[] diversityCharacters = new int[26];
-        private string mostDiverseWord = null;
+        private char[] mostDiverseWord = null;
         private int runningDiversity = 0;
         private int currentDiversity = 0;
         private int winningIndex = 0;
@@ -44,7 +44,7 @@ namespace Wordler.Core
             return $" {Path.GetFileName(file)}, {line}";
         }
 
-        public char[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
+        public char[] TryAnswersRemove(int guessesRemaining1, List<char[]> wordList, char[] wordToGuess, bool outPut)
         {
             StartMemory = GC.GetAllocatedBytesForCurrentThread();
             result = new char[] { ' ', ' ', ' ', ' ', ' ' };
@@ -193,7 +193,7 @@ namespace Wordler.Core
         }
 
         public void PrunePossibleWords(
-            IList<string> wordList,
+            List<char[]> wordList,
             Dictionary<char, int> requiredLetters,
             char[] knownPositionDictionary,
             int[] forbiddenLetters,
@@ -270,7 +270,7 @@ namespace Wordler.Core
             }
         }
 
-        public char[] EvaluateResponse(string guessLetters, string targetWord)
+        public char[] EvaluateResponse(char[] guessLetters, char[] targetWord)
         {
             var result = new[] { ' ', ' ', ' ', ' ', ' ' };
             if (guessLetters.Length != 5) return Array.Empty<char>();
