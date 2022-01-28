@@ -1,3 +1,4 @@
+//#define ENABLE_AKARI_TEST
 namespace Wordler.Akari;
 
 using System.Runtime.InteropServices;
@@ -5,9 +6,7 @@ using Wordler.Benchmarks;
 
 public class AkariSolver
 {
-    [DllImport("Akari/WordleSolverDLL.dll", CharSet = CharSet.Ansi, SetLastError = true)]
-    private static extern void test();
-
+#if ENABLE_AKARI_TEST
     [DllImport("Akari/WordleSolverDLL.dll", CharSet = CharSet.Ansi, SetLastError = true)]
     private static extern void loadWords(string[] words, int wordCount);
 
@@ -19,7 +18,6 @@ public class AkariSolver
 
     public void Initialize()
     {
-        test();
         loadWords(ReservedList.AbelWords, ReservedList.AbelWords.Length);
     }
 
@@ -32,4 +30,13 @@ public class AkariSolver
     {
         return solveParallel(count);
     }
+
+#else
+    public void Initialize() { }
+
+    public int Solve(int count) => 0;
+
+    public int SolveParallel(int count) => 0;
+
+#endif
 }

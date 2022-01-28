@@ -61,7 +61,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public int AkariSolver()
     {
         return akariSolver.Solve(Count);
