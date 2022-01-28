@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Wordler.Core\Wordler.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Akari\WordleSolverDLL.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
