@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using BenchmarkDotNet.Attributes;
+using Wordler.Akari;
 using Wordler.Core;
 
 namespace Wordler.Benchmarks;
@@ -11,6 +12,10 @@ public class Benchmark
     public int Count { get; set; }
     public SwearSolver ss { get; set; }
     public SwearSolver ssp { get; set; }
+
+    public AkariSolver akariSolver;
+
+
     private List<string> _allWords = new();
     private List<string> _randomWords = new();
     
@@ -22,6 +27,9 @@ public class Benchmark
         _randomWords = _allWords.OrderBy(l => ran.NextDouble()).Take(Count).ToList();
         ss = new SwearSolver(Count, false);
         ssp = new SwearSolver(Count, true);
+        
+        akariSolver = new();
+        akariSolver.Initialize();
     }
 
     [Benchmark(Baseline = true)]
@@ -53,4 +61,15 @@ public class Benchmark
         return "";
     }
 
+    //[Benchmark]
+    public int AkariSolver()
+    {
+        return akariSolver.Solve(Count);
+    }
+
+    //[Benchmark]
+    public int AkariSolverParallel()
+    {
+        return akariSolver.SolveParallel(Count);
+    }
 }
