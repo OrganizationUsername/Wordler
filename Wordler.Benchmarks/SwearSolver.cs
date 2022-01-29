@@ -83,7 +83,7 @@ public class SwearSolver
         var guess = wordlist[run][rand.Next() % wordlist[run].Length];
         var attempt = 1;
 
-        while (!guess.Equals(prompt) || attempt == 7)
+        while (!guess.Equals(prompt) || attempt < 7)
         {
             for (var i = 0; i < 5; i++)
             {
