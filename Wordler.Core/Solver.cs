@@ -147,16 +147,14 @@ namespace Wordler.Core
 
                     if (plausible && _letterCount >= 0)
                     {
-                        _maxAllowedLetters[c - 'a'] = Math.Min(_maxAllowedLetters[c - 'a'], _letterCount);
+                        var d = c - 'a';
+                        _maxAllowedLetters[d] = Math.Min(_maxAllowedLetters[d], _letterCount);
                     }
                 }
                 ///*GetAllocations(StartMemory, Log());*/
                 for (var i = 0; i < _result.Length; i++)
                 {
-                    if (_result[i] != Good)
-                    {
-                        _forbiddenLetterPositions[i].Add(_guess[i]);
-                    }
+                    if (_result[i] != Good) { _forbiddenLetterPositions[i].Add(_guess[i]); }
                 }
                 _tempDictionary.Clear();
                 ///*GetAllocations(StartMemory, Log());*/
@@ -164,14 +162,8 @@ namespace Wordler.Core
                 {
                     if (_result[i] == BadPosition || _result[i] == Good)
                     {
-                        if (_tempDictionary.ContainsKey(_guess[i]))
-                        {
-                            _tempDictionary[_guess[i]]++;
-                        }
-                        else
-                        {
-                            _tempDictionary.TryAdd(_guess[i], 1);
-                        }
+                        if (_tempDictionary.ContainsKey(_guess[i])) { _tempDictionary[_guess[i]]++; }
+                        else { _tempDictionary.TryAdd(_guess[i], 1); }
                     }
 
                     foreach ((var key, var value) in _tempDictionary)
@@ -180,16 +172,10 @@ namespace Wordler.Core
                         _requiredLettersDictionary[key] = Math.Max(_requiredLettersDictionary[key], value);
                     }
 
-                    if (_result[i] == Good)
-                    {
-                        _knownPosition[i] = _guess[i];
-                    }
+                    if (_result[i] == Good) { _knownPosition[i] = _guess[i]; }
                 }
                 guessesRemaining1--;
-                if (outPut)
-                {
-                    Console.WriteLine(new string(_result.ToArray()));
-                }
+                if (outPut) { Console.WriteLine(new string(_result.ToArray())); }
             }
             return _result;
         }

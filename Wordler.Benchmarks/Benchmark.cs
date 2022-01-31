@@ -9,7 +9,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(1, 10, 100)]
+    [Params(/*1, 10,*/ 100)]
     public int Count { get; set; }
     public SwearSolver ss { get; set; }
     public SwearSolver ssp { get; set; }
@@ -19,11 +19,13 @@ public class Benchmark
     private List<string> _allWords = new();
     private List<string> _randomWords = new();
     private List<string> someWords = new();
+    private string[] AllWordsArray;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
         _allWords = Solver.GetLines();
+        AllWordsArray = _allWords.ToArray();
         var ran = new Random(2);
         _randomWords = _allWords.OrderBy(l => ran.NextDouble()).Take(Count).ToList();
         someWords = _allWords.Take(Count).ToList();
@@ -40,17 +42,18 @@ public class Benchmark
     {
         var sb = new StringBuilder();
         var reloadableWords = new List<string>();
+        Solver solver = new Solver();
         foreach (var s in _randomWords)
         {
             reloadableWords.Clear();
             reloadableWords.AddRange(_allWords);
-            Solver solver = new Solver();
-            sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
+            solver.TryAnswersRemove(6, reloadableWords, s, false);
+            //sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
         }
         return sb.ToString();
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string CsaSolver()
     {
         var runtimeTree = CameronAavik.Wordler.Solver.BuildGuessTree(_allWords, _allWords);
@@ -69,7 +72,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string CsaPreProcessedSolver()
     {
         int maxSteps = 0;
@@ -94,7 +97,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);
