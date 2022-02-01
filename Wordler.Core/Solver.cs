@@ -263,7 +263,7 @@ namespace Wordler.Core
             }
 #if DEBUG
             Trace.WriteLine($"Words deleted by letterCount: {wordsDeletedByletterCountTuple} with {letterCountTuple.Length} letter filters. {string.Join(",", letterCountTuple.Select(l => $"{l.letter} {l.minCount}=>{(l.maxCount > 5 ? -1 : l.maxCount)}"))})");
-            Trace.WriteLine($"Words deleted by Position: {wordsDeltedByPosition} with {new string(badLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())} bad and {new string(goodLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())} good.");
+            Trace.WriteLine($"Words deleted by Position: {wordsDeltedByPosition} with '{new string(badLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' bad and '{new string(goodLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' good.");
 #endif
             return _winningIndex;
         }
