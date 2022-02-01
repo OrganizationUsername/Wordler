@@ -89,7 +89,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearSolver()
     {
         var runtimeSolver = new SwearSolver(Count, false);
@@ -97,7 +97,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);

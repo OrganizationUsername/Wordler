@@ -83,14 +83,12 @@ public class SolverTests
     {
         var wordList = new List<string>() { "robot", "sabot", "dabot" };
 
-
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            Array.Empty<char>(),
-            Array.Empty<int>(),
-            Array.Empty<List<char>>()
-            , new() { ('r', 1, 100) });
+            new (char letter, int minCount, int maxCount)[1],
+            new char[0],
+            new char[0]);
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
@@ -105,10 +103,9 @@ public class SolverTests
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            knownPositions,
-            Array.Empty<int>(),
-            Array.Empty<List<char>>()
-            , new());
+            new (char letter, int minCount, int maxCount)[1],
+            new char[0],
+            new char[0]);
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
@@ -123,10 +120,9 @@ public class SolverTests
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            Array.Empty<char>(),
-            forbiddenLetters,
-            Array.Empty<List<char>>(),
-        new());
+            new (char letter, int minCount, int maxCount)[1],
+            new char[0],
+            new char[0]);
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
@@ -141,10 +137,9 @@ public class SolverTests
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            Array.Empty<char>(),
-            Array.Empty<int>(),
-            forbiddenLetterPositions,
-            new());
+            new (char letter, int minCount, int maxCount)[1],
+            new char[0],
+            new char[0]);
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
