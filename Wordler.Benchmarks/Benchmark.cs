@@ -69,7 +69,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string CsaPreProcessedSolver()
     {
         int maxSteps = 0;
@@ -94,7 +94,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);
@@ -108,7 +108,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public int AkariSolver() => akariSolver.Solve(Count);
 
     //[Benchmark]
