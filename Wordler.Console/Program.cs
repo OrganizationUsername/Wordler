@@ -33,7 +33,7 @@ var human = true;
 Console.WriteLine($"Input number of words to solve. -1 for all words.");
 //var numberString = Console.ReadLine();
 
-var numberToTake = 1000;// int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
+var numberToTake = 100;// int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
 //if (numberString == "-1") numberToTake = oneTimeList.Count - 1;
 var successes = 0;
 
@@ -57,7 +57,7 @@ for (var s = 0; s < numberToTake; s++)
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
-    //answerWord = "oases";
+    //answerWord = "annwn";
     if (outPut)
     {
         Console.WriteLine(answerWord);

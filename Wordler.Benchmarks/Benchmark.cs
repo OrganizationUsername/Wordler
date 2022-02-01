@@ -9,7 +9,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(/*1, 10,*/ 100)]
+    [Params(1, 10, 100)]
     public int Count { get; set; }
     public SwearSolver ss { get; set; }
     public SwearSolver ssp { get; set; }
@@ -97,7 +97,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);
@@ -111,7 +111,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public int AkariSolver()
     {
         return akariSolver.Solve(Count);

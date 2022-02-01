@@ -83,15 +83,14 @@ public class SolverTests
     {
         var wordList = new List<string>() { "robot", "sabot", "dabot" };
 
-        var forbiddenLetters = new Dictionary<char, int> { { 'r', 1 } };
 
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            forbiddenLetters,
             Array.Empty<char>(),
             Array.Empty<int>(),
-            Array.Empty<List<char>>());
+            Array.Empty<List<char>>()
+            , new() { ('r', 1, 100) });
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
@@ -106,10 +105,10 @@ public class SolverTests
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            new(),
             knownPositions,
             Array.Empty<int>(),
-            Array.Empty<List<char>>());
+            Array.Empty<List<char>>()
+            , new());
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
@@ -124,10 +123,10 @@ public class SolverTests
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            new(),
             Array.Empty<char>(),
             forbiddenLetters,
-            Array.Empty<List<char>>());
+            Array.Empty<List<char>>(),
+        new());
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
@@ -142,10 +141,10 @@ public class SolverTests
         Solver solver = new Solver();
         solver.PrunePossibleWords(
             wordList,
-            new(),
             Array.Empty<char>(),
             Array.Empty<int>(),
-            forbiddenLetterPositions);
+            forbiddenLetterPositions,
+            new());
         Assert.Equal(1, wordList.Count(x => x is not null));
         Assert.Equal("robot", wordList.First(x => x is not null));
     }
