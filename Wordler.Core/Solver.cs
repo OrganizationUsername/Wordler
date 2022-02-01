@@ -17,6 +17,9 @@ namespace Wordler.Core
         public char[] badLetterPositions = new char[5];
         (char letter, int minCount, int maxCount)[] letterCountTuple = new (char letter, int minCount, int maxCount)[5];
         private (char letter, int bad, int wrong, int good)[] trimList = new (char letter, int bad, int wrong, int good)[5];
+        byte[,] AlreadyForbidden = new byte[26, 5];
+        byte[] AlreadyRequired = new byte[5];
+
 
         public static List<string> GetLines() => File.ReadAllLines("FiveLetterWords.txt").ToList();
 
@@ -35,9 +38,8 @@ namespace Wordler.Core
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
             _result = "     ";
             Array.Clear(_diversityCharacters);
-            byte[,] AlreadyForbidden = new byte[26, 5];
-            byte[] AlreadyRequired = new byte[5];
-            //byte[,] AlreadyRequired = new byte[26, 5];
+            Array.Clear(AlreadyForbidden);
+            Array.Clear(AlreadyRequired);
 
             while (guessesRemaining1 > 0 && _result.Any(x => x != 'G'))
             {
@@ -45,7 +47,7 @@ namespace Wordler.Core
                 {
                     //var sw = new Stopwatch();
                     //sw.Start();
-                    int mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions);
+                    var mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions);
 
                     //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={wordToGuess}, prune time: {sw.Elapsed.TotalMilliseconds}");
 
@@ -106,38 +108,26 @@ namespace Wordler.Core
                 Array.Clear(badLetterPositions);
 
 #if DEBUG
-                if (wordList.Count(x => x is not null) == 0 && wordToGuess != mostDiverseWord)
-                {
-                    Debugger.Break();
-                }
-#endif
-
-#if DEBUG
-
+                if (wordList.Count(x => x is not null) == 0 && wordToGuess != mostDiverseWord){Debugger.Break();}
                 if (outPut) { Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {wordList.Count(c => c is not null) + 1} words."); }
 #endif
                 _result = EvaluateResponse(mostDiverseWord, wordToGuess);
 
                 if (_result == "     ") { continue; }
 
-                for (int i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
+                for (var i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
                 {
                     var index = mostDiverseWord[i] - 'a';
-                    letterResults[index] = new(
-                    letterResults[index].bad + (_result[i] == 'X' ? 1 : 0),
-                    letterResults[index].wrong + (_result[i] == 'Y' ? 1 : 0),
-                    letterResults[index].good + (_result[i] == 'G' ? 1 : 0)
-                    );
+                    letterResults[index].bad += (_result[i] == 'X' ? 1 : 0);
+                    letterResults[index].wrong += (_result[i] == 'Y' ? 1 : 0);
+                    letterResults[index].good += (_result[i] == 'G' ? 1 : 0);
 
-                    //if (_result[i] == 'Y') { badLetterPositions[i] = mostDiverseWord[i]; }
-                    //if (_result[i] == 'G') { goodLetterPositions[i] = mostDiverseWord[i]; }
                     if (_result[i] == 'Y' && AlreadyForbidden[index, i] == 0) { badLetterPositions[i] = mostDiverseWord[i]; AlreadyForbidden[index, i] = 1; }
-                    //if (_result[i] == 'G' && AlreadyRequired[index, i] == 0) { goodLetterPositions[i] = mostDiverseWord[i]; AlreadyRequired[index, i] = 1; }
                     if (_result[i] == 'G' && AlreadyRequired[i] == 0) { goodLetterPositions[i] = mostDiverseWord[i]; AlreadyRequired[i] = 1; }
                 }
 
-                int maxTempIndex = 0;
-                for (int i = 0; i < letterResults.Length; i++)
+                var maxTempIndex = 0;
+                for (var i = 0; i < letterResults.Length; i++)
                 {
                     if (letterResults[i].bad + letterResults[i].wrong + letterResults[i].good > 0)
                     {
@@ -148,13 +138,10 @@ namespace Wordler.Core
                 }
 
                 var letterCountTupleCount = 0;
-                for (int i = 0; i < maxTempIndex; i++)
+                for (var i = 0; i < maxTempIndex; i++)
                 {
-                    int upperLimit = int.MaxValue;
-                    if (trimList[i].bad > 0)
-                    { //Then we know the upper limit
-                        upperLimit = trimList[i].good + trimList[i].wrong;
-                    }
+                    var upperLimit = int.MaxValue;
+                    if (trimList[i].bad > 0) { /*Then we know the upper limit*/ upperLimit = trimList[i].good + trimList[i].wrong; }
                     var lowerLimit = trimList[i].good + trimList[i].wrong;
                     letterCountTuple[letterCountTupleCount] = ((trimList[i].letter, lowerLimit, upperLimit));
                     letterCountTupleCount++;
@@ -270,7 +257,7 @@ namespace Wordler.Core
 
         public string EvaluateResponse(string guessLetters, string targetWord)
         {
-            var result = new[] { ' ', ' ', ' ', ' ', ' ' };
+            char[] result = new[] { ' ', ' ', ' ', ' ', ' ' };
             if (guessLetters.Length != 5) return "     ";
             var answers = targetWord.ToArray();
 
@@ -306,7 +293,7 @@ namespace Wordler.Core
                 result[i] = 'Y';
                 answers[index] = ' ';
             }
-            return new string(result);
+            return new(result);
         }
     }
 }

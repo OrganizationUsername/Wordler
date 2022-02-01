@@ -5,7 +5,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class BenchmarkStuff
 {
-    [Params(10, 1000, 10_000)]
+    [Params(/*10, 1000,*/ 10_000)]
     public int Count { get; set; }
 
     private List<string> _strings;
