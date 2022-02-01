@@ -5,24 +5,13 @@ namespace Wordler.Core
 {
     public struct Solver
     {
-        private readonly int[] _indices = new int[5];
-        private int _letterCount;
-        private readonly Dictionary<char, int> _tempDictionary = new();
         private long _startMemory;
-        private const char Good = 'G';
-        private const char BadPosition = 'Y';
-        private const char Bad = 'X';
         private string _result;
-        private List<char> _guess;
         private int _maxDiversity = 5;
         private readonly int[] _diversityCharacters = new int[26];
         private int _runningDiversity;
         private int _currentDiversity;
         private int _winningIndex;
-        private char[] _knownPosition = new char[5];
-        private readonly int[] _requiredLetters = new int[26];
-        private int[] _maxAllowedLetters = new int[26];
-        private List<char>[] _forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
         (int bad, int wrong, int good)[] letterResults = new (int, int, int)[26];//Get a unique list of letters
         public char[] goodLetterPositions = new char[5]; //Should save this somewhere else so it doesn't try to filter on it a second time.
         public char[] badLetterPositions = new char[5];
@@ -43,12 +32,9 @@ namespace Wordler.Core
         public string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
         {
             string mostDiverseWord;
-            _startMemory = GC.GetAllocatedBytesForCurrentThread();
+            //_startMemory = GC.GetAllocatedBytesForCurrentThread();
             _result = "     ";
             Array.Clear(_diversityCharacters);
-
-            for (var i = 0; i < _maxAllowedLetters.Length; i++) { _maxAllowedLetters[i] = int.MaxValue; }
-            _forbiddenLetterPositions = new List<char>[] { new(), new(), new(), new(), new() };
 
             while (guessesRemaining1 > 0 && _result.Any(x => x != 'G'))
             {
@@ -65,7 +51,7 @@ namespace Wordler.Core
                 }
                 else
                 {
-                    //Diversity word //ToDo: This should be passed back from PrunePossibleWords
+                    //Diversity word
                     _winningIndex = 0;
                     _runningDiversity = 0;
                     mostDiverseWord = default;
@@ -94,7 +80,6 @@ namespace Wordler.Core
                             mostDiverseWord = word;
                             if (_currentDiversity == _maxDiversity)
                             {
-                                word = null;
                                 break;
                             }
                         }
@@ -113,26 +98,20 @@ namespace Wordler.Core
                 goodLetterPositions = new char[5];
                 badLetterPositions = new char[5];
 
-                if (!wordList.Any()) return "     ";
-
-
 #if DEBUG
-                if (wordList.Count(x => x is not null) == 0)
+                if (wordList.Count(x => x is not null) == 0 && wordToGuess != mostDiverseWord)
                 {
                     Debugger.Break();
                 }
 #endif
 
-
-                _guess = mostDiverseWord.ToList();
-
+#if DEBUG
 
                 if (outPut) { Console.WriteLine($"RoboGuess: {new(_guess.ToArray())} out of {wordList.Count(c => c is not null) + 1} words."); }
+#endif
                 _result = EvaluateResponse(mostDiverseWord, wordToGuess);
 
-                if (_result.All(c => c == ' ')) { continue; }
-
-
+                if (_result == "     ") { continue; }
 
                 for (int i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
                 {
@@ -172,7 +151,9 @@ namespace Wordler.Core
                 }
 
                 guessesRemaining1--;
+#if DEBUG
                 if (outPut) { Console.WriteLine(new string(_result.ToArray())); }
+#endif
             }
             return _result;
         }
@@ -185,13 +166,12 @@ namespace Wordler.Core
         )
         {
             int count;
-
+            _currentDiversity = 0;
             _winningIndex = 0;
             _runningDiversity = 0;
-            string mostDiverseWord = default;
             Array.Clear(_diversityCharacters);
 
-            for (var i = wordList.Count - 1; i >= 0; i--)
+            for (var i = 0; i < wordList.Count; i++)
             {
                 var word = wordList[i];
                 if (word is null) continue;
@@ -237,7 +217,7 @@ namespace Wordler.Core
 
                 //Get most varied word
                 if (word is null) continue;
-
+                if (_currentDiversity == _maxDiversity) continue;
                 for (var j = 0; j < word.Length; j++)
                 {
                     var c = word[j];

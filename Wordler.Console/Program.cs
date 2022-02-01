@@ -17,7 +17,7 @@ ToDo: Make sure I'm doing all of this:
 idea: maximize "un-used letter" that still have match on yellow/green letter
  */
 
-var outPut = true;
+var outPut = false;
 long startMemory = GC.GetAllocatedBytesForCurrentThread();
 if (!File.Exists("FiveLetterWords.txt"))
 {
@@ -33,7 +33,7 @@ var human = true;
 Console.WriteLine($"Input number of words to solve. -1 for all words.");
 //var numberString = Console.ReadLine();
 
-var numberToTake = 10;// int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
+var numberToTake = 1000;// int.TryParse(numberString, out int parsedInt) ? parsedInt : 1;
 //if (numberString == "-1") numberToTake = oneTimeList.Count - 1;
 var successes = 0;
 
@@ -77,4 +77,4 @@ for (var s = 0; s < numberToTake; s++)
 }
 
 Solver.GetAllocations(startMemory, "Finished: " + Solver.Log());
-Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.ElapsedMilliseconds} ms.");
+Console.WriteLine($"{successes} successes out of {numberToTake} in {sw.Elapsed.TotalMilliseconds} ms.");

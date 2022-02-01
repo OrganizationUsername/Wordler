@@ -9,7 +9,7 @@ namespace Wordler.Benchmarks;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(1, 10, 100)]
+    [Params(1, 10, 100/*, 1000*/)]
     public int Count { get; set; }
     public SwearSolver ss { get; set; }
     public SwearSolver ssp { get; set; }
@@ -20,6 +20,7 @@ public class Benchmark
     private List<string> _randomWords = new();
     private List<string> someWords = new();
     private string[] AllWordsArray;
+    Solver solver = new Solver();
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -32,7 +33,7 @@ public class Benchmark
         ss = new SwearSolver(Count, false);
         ssp = new SwearSolver(Count, true);
         tree = CameronAavik.Wordler.Solver.BuildGuessTree(_allWords, _allWords);
-
+        solver = new Solver();
         akariSolver = new();
         akariSolver.Initialize();
     }
@@ -40,17 +41,14 @@ public class Benchmark
     [Benchmark(Baseline = true)]
     public string NaiveSolve()
     {
-        var sb = new StringBuilder();
-        var reloadableWords = new List<string>();
-        Solver solver = new Solver();
-        foreach (var s in _randomWords)
+        var reloadableWords = _allWords.ToArray();
+
+        foreach (var s in someWords)
         {
-            reloadableWords.Clear();
-            reloadableWords.AddRange(_allWords);
             solver.TryAnswersRemove(6, reloadableWords, s, false);
-            //sb.Append(new string(solver.TryAnswersRemove(6, reloadableWords, s, false).ToArray()));
+            Array.Copy(AllWordsArray, reloadableWords, reloadableWords.Length);
         }
-        return sb.ToString();
+        return "";
     }
 
     //[Benchmark]
@@ -112,14 +110,8 @@ public class Benchmark
     }
 
     [Benchmark]
-    public int AkariSolver()
-    {
-        return akariSolver.Solve(Count);
-    }
+    public int AkariSolver() => akariSolver.Solve(Count);
 
     //[Benchmark]
-    public int AkariSolverParallel()
-    {
-        return akariSolver.SolveParallel(Count);
-    }
+    public int AkariSolverParallel() => akariSolver.SolveParallel(Count);
 }
