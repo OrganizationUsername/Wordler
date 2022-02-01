@@ -13,7 +13,7 @@ namespace Wordler.Core
         private int _currentDiversity;
         private int _winningIndex;
         (int bad, int wrong, int good)[] letterResults = new (int, int, int)[26];//Get a unique list of letters
-        public char[] goodLetterPositions = new char[5]; //Should save this somewhere else so it doesn't try to filter on it a second time.
+        public char[] goodLetterPositions = new char[5];
         public char[] badLetterPositions = new char[5];
         (char letter, int minCount, int maxCount)[] letterCountTuple = new (char letter, int minCount, int maxCount)[5];
         private (char letter, int bad, int wrong, int good)[] trimList = new (char letter, int bad, int wrong, int good)[5];
@@ -35,6 +35,9 @@ namespace Wordler.Core
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
             _result = "     ";
             Array.Clear(_diversityCharacters);
+            byte[,] AlreadyForbidden = new byte[26, 5];
+            byte[] AlreadyRequired = new byte[5];
+            //byte[,] AlreadyRequired = new byte[26, 5];
 
             while (guessesRemaining1 > 0 && _result.Any(x => x != 'G'))
             {
@@ -126,8 +129,11 @@ namespace Wordler.Core
                     letterResults[index].good + (_result[i] == 'G' ? 1 : 0)
                     );
 
-                    if (_result[i] == 'Y') { badLetterPositions[i] = mostDiverseWord[i]; }
-                    if (_result[i] == 'G') { goodLetterPositions[i] = mostDiverseWord[i]; }
+                    //if (_result[i] == 'Y') { badLetterPositions[i] = mostDiverseWord[i]; }
+                    //if (_result[i] == 'G') { goodLetterPositions[i] = mostDiverseWord[i]; }
+                    if (_result[i] == 'Y' && AlreadyForbidden[index, i] == 0) { badLetterPositions[i] = mostDiverseWord[i]; AlreadyForbidden[index, i] = 1; }
+                    //if (_result[i] == 'G' && AlreadyRequired[index, i] == 0) { goodLetterPositions[i] = mostDiverseWord[i]; AlreadyRequired[index, i] = 1; }
+                    if (_result[i] == 'G' && AlreadyRequired[i] == 0) { goodLetterPositions[i] = mostDiverseWord[i]; AlreadyRequired[i] = 1; }
                 }
 
                 int maxTempIndex = 0;
@@ -173,13 +179,16 @@ namespace Wordler.Core
             _currentDiversity = 0;
             _winningIndex = 0;
             _runningDiversity = 0;
-
+#if DEBUG
+            var wordsDeletedByletterCountTuple = 0;
+            var wordsDeltedByPosition = 0;
+#endif
 
             for (var i = 0; i < wordList.Count; i++)
             {
                 var word = wordList[i];
                 if (word is null) continue;
-                for (var index = 0; index < goodLetterPositions.Length; index++)
+                for (var index = 0; index < 5; index++)
                 {
                     if (badLetterPositions[index] != '\0')
                     {
@@ -187,6 +196,9 @@ namespace Wordler.Core
                         {
                             word = null;
                             wordList[i] = null;
+#if DEBUG
+                            wordsDeltedByPosition++;
+#endif
                             break;
                         }
                     }
@@ -196,12 +208,18 @@ namespace Wordler.Core
                         {
                             word = null;
                             wordList[i] = null;
+#if DEBUG
+                            wordsDeltedByPosition++;
+#endif
                             break;
                         }
                     }
                 }
 
                 if (word is null) continue;
+
+
+
                 foreach (var tuple in letterCountTuple)
                 {
                     count = 0;
@@ -215,6 +233,9 @@ namespace Wordler.Core
                     {
                         word = null;
                         wordList[i] = null;
+#if DEBUG
+                        wordsDeletedByletterCountTuple++;
+#endif
                         break;
                     }
                 }
@@ -240,7 +261,10 @@ namespace Wordler.Core
                     _runningDiversity = _currentDiversity;
                 }
             }
-
+#if DEBUG
+            Trace.WriteLine($"Words deleted by letterCount: {wordsDeletedByletterCountTuple} with {letterCountTuple.Length} letter filters. {string.Join(",", letterCountTuple.Select(l => $"{l.letter} {l.minCount}=>{(l.maxCount > 5 ? -1 : l.maxCount)}"))})");
+            Trace.WriteLine($"Words deleted by Position: {wordsDeltedByPosition} with {new string(badLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())} bad and {new string(goodLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())} good.");
+#endif
             return _winningIndex;
         }
 
