@@ -5,7 +5,7 @@ using Wordler.Core;
 
 namespace Wordler.Benchmarks;
 
-[ShortRunJob]
+//[ShortRunJob]
 [MemoryDiagnoser]
 public class Benchmark
 {
@@ -95,7 +95,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);

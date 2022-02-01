@@ -51,46 +51,49 @@ namespace Wordler.Core
                 }
                 else
                 {
-                    //Diversity word
-                    _winningIndex = 0;
-                    _runningDiversity = 0;
-                    mostDiverseWord = default;
-                    for (var index = 0; index < wordList.Count; index++)
-                    {
-                        var word = wordList[index];
-                        if (word is null) continue;
-                        Array.Clear(_diversityCharacters);
-                        for (var i = 0; i < word.Length; i++)
-                        {
-                            var c = word[i];
-                            _diversityCharacters[c - 'a']++;
-                        }
+                    mostDiverseWord = wordList[41];
+                    wordList[41] = null;
+                    //_maxDiversity = Math.Min(_maxDiversity, _runningDiversity);
+                    ////Diversity word
+                    //_winningIndex = 0;
+                    //_runningDiversity = 0;
+                    //mostDiverseWord = default;
+                    //for (var index = 0; index < wordList.Count; index++)
+                    //{
+                    //    var word = wordList[index];
+                    //    if (word is null) continue;
+                    //    Array.Clear(_diversityCharacters);
+                    //    for (var i = 0; i < word.Length; i++)
+                    //    {
+                    //        var c = word[i];
+                    //        _diversityCharacters[c - 'a']++;
+                    //    }
 
-                        _currentDiversity = 0;
-                        for (var i = 0; i < _diversityCharacters.Length; i++)
-                        {
-                            var c = _diversityCharacters[i];
-                            if (c != 0) _currentDiversity++;
-                        }
+                    //    _currentDiversity = 0;
+                    //    for (var i = 0; i < _diversityCharacters.Length; i++)
+                    //    {
+                    //        var c = _diversityCharacters[i];
+                    //        if (c != 0) _currentDiversity++;
+                    //    }
 
-                        if (_currentDiversity > _runningDiversity)
-                        {
-                            _winningIndex = index;
-                            _runningDiversity = _currentDiversity;
-                            mostDiverseWord = word;
-                            if (_currentDiversity == _maxDiversity)
-                            {
-                                break;
-                            }
-                        }
-                    }
+                    //    if (_currentDiversity > _runningDiversity)
+                    //    {
+                    //        _winningIndex = index;
+                    //        _runningDiversity = _currentDiversity;
+                    //        mostDiverseWord = word;
+                    //        if (_currentDiversity == _maxDiversity)
+                    //        {
+                    //            break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (mostDiverseWord is null)
-                    {
-                        mostDiverseWord = wordList[_winningIndex];
-                        wordList[_winningIndex] = null;
-                        _maxDiversity = Math.Min(_maxDiversity, _runningDiversity);
-                    }
+                    //if (mostDiverseWord is null)
+                    //{
+                    //    mostDiverseWord = wordList[_winningIndex];
+                    //    wordList[_winningIndex] = null;
+                    //    _maxDiversity = Math.Min(_maxDiversity, _runningDiversity);
+                    //}
                 }
 
                 letterCountTuple = new (char letter, int minCount, int maxCount)[5];
@@ -107,7 +110,7 @@ namespace Wordler.Core
 
 #if DEBUG
 
-                if (outPut) { Console.WriteLine($"RoboGuess: {new(_guess.ToArray())} out of {wordList.Count(c => c is not null) + 1} words."); }
+                if (outPut) { Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {wordList.Count(c => c is not null) + 1} words."); }
 #endif
                 _result = EvaluateResponse(mostDiverseWord, wordToGuess);
 
@@ -169,15 +172,15 @@ namespace Wordler.Core
             _currentDiversity = 0;
             _winningIndex = 0;
             _runningDiversity = 0;
-            Array.Clear(_diversityCharacters);
+            
 
             for (var i = 0; i < wordList.Count; i++)
             {
                 var word = wordList[i];
                 if (word is null) continue;
-                for (var index = 0; index < this.goodLetterPositions.Length; index++)
+                for (var index = 0; index < goodLetterPositions.Length; index++)
                 {
-                    if (this.badLetterPositions[index] != '\0')
+                    if (badLetterPositions[index] != '\0')
                     {
                         if (word[index] == badLetterPositions[index])
                         {
@@ -186,9 +189,9 @@ namespace Wordler.Core
                             break;
                         }
                     }
-                    if (this.goodLetterPositions[index] != '\0')
+                    if (goodLetterPositions[index] != '\0')
                     {
-                        if (word[index] != this.goodLetterPositions[index])
+                        if (word[index] != goodLetterPositions[index])
                         {
                             word = null;
                             wordList[i] = null;
@@ -218,6 +221,7 @@ namespace Wordler.Core
                 //Get most varied word
                 if (word is null) continue;
                 if (_currentDiversity == _maxDiversity) continue;
+                Array.Clear(_diversityCharacters);
                 for (var j = 0; j < word.Length; j++)
                 {
                     var c = word[j];
