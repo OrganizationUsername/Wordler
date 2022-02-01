@@ -19,7 +19,8 @@ namespace Wordler.Core
         private (char letter, int bad, int wrong, int good)[] trimList = new (char letter, int bad, int wrong, int good)[5];
         byte[,] AlreadyForbidden = new byte[26, 5];
         byte[] AlreadyRequired = new byte[5];
-
+        private char[] answers = new char[5];
+        private char[] result = new char[5];
 
         public static List<string> GetLines() => File.ReadAllLines("FiveLetterWords.txt").ToList();
 
@@ -32,7 +33,7 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
+        public unsafe string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
         {
             string mostDiverseWord;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -40,7 +41,7 @@ namespace Wordler.Core
             Array.Clear(_diversityCharacters);
             Array.Clear(AlreadyForbidden);
             Array.Clear(AlreadyRequired);
-
+            //byte* numbers = stackalloc byte[wordList.Count];
             while (guessesRemaining1 > 0 && _result.Any(x => x != 'G'))
             {
                 if (guessesRemaining1 < 6)
@@ -257,9 +258,14 @@ namespace Wordler.Core
 
         public string EvaluateResponse(string guessLetters, string targetWord)
         {
-            char[] result = new[] { ' ', ' ', ' ', ' ', ' ' };
-            if (guessLetters.Length != 5) return "     ";
-            var answers = targetWord.ToArray();
+            result[0] = ' ';
+            result[1] = ' ';
+            result[2] = ' ';
+            result[3] = ' ';
+            result[4] = ' ';
+
+            //if (guessLetters.Length != 5) return "     ";
+            answers = targetWord.ToArray();
 
             for (var i = 0; i < 5; i++)
             {
@@ -276,7 +282,7 @@ namespace Wordler.Core
 
                 var index = -1;
 
-                for (var index1 = 0; index1 < answers.Length; index1++)
+                for (var index1 = 0; index1 < 5; index1++)
                 {
                     if (answers[index1] == guessLetters[i])
                     {

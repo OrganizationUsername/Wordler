@@ -41,12 +41,12 @@ public class Benchmark
     [Benchmark(Baseline = true)]
     public string NaiveSolve()
     {
-        var reloadableWords = _allWords.ToArray();
+        var reloadeableWords = new string[AllWordsArray.Length];
 
         foreach (var s in someWords)
         {
-            solver.TryAnswersRemove(6, reloadableWords, s, false);
-            Array.Copy(AllWordsArray, reloadableWords, reloadableWords.Length);
+            Array.Copy(AllWordsArray, reloadeableWords, reloadeableWords.Length);
+            solver.TryAnswersRemove(6, reloadeableWords, s, false);
         }
         return "";
     }
