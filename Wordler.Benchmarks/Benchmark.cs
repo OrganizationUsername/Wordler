@@ -42,10 +42,9 @@ public class Benchmark
     public string NaiveSolve()
     {
         var reloadeableWords = new string[AllWordsArray.Length];
-
+        Array.Copy(AllWordsArray, reloadeableWords, reloadeableWords.Length);
         foreach (var s in someWords)
         {
-            Array.Copy(AllWordsArray, reloadeableWords, reloadeableWords.Length);
             solver.TryAnswersRemove(6, reloadeableWords, s, false);
         }
         return "";
