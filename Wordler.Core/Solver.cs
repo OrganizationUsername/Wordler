@@ -16,7 +16,7 @@ namespace Wordler.Core
         public char[] goodLetterPositions = new char[5]; //Should save this somewhere else so it doesn't try to filter on it a second time.
         public char[] badLetterPositions = new char[5];
         (char letter, int minCount, int maxCount)[] letterCountTuple = new (char letter, int minCount, int maxCount)[5];
-        private (char letter, int bad, int wrong, int good)[] trimList;
+        private (char letter, int bad, int wrong, int good)[] trimList = new (char letter, int bad, int wrong, int good)[5];
 
         public static List<string> GetLines() => File.ReadAllLines("FiveLetterWords.txt").ToList();
 
@@ -43,7 +43,8 @@ namespace Wordler.Core
                     //var sw = new Stopwatch();
                     //sw.Start();
                     int mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions);
-                    //Trace.WriteLine($"prune time: {sw.Elapsed.TotalMilliseconds}");
+
+                    //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={wordToGuess}, prune time: {sw.Elapsed.TotalMilliseconds}");
 
                     mostDiverseWord = wordList[mostDiverseWordIndex];
                     wordList[mostDiverseWordIndex] = null;
@@ -96,10 +97,10 @@ namespace Wordler.Core
                     //}
                 }
 
-                letterCountTuple = new (char letter, int minCount, int maxCount)[5];
-                trimList = new (char, int, int, int)[5];
-                goodLetterPositions = new char[5];
-                badLetterPositions = new char[5];
+                Array.Clear(letterCountTuple);
+                Array.Clear(trimList);
+                Array.Clear(goodLetterPositions);
+                Array.Clear(badLetterPositions);
 
 #if DEBUG
                 if (wordList.Count(x => x is not null) == 0 && wordToGuess != mostDiverseWord)
@@ -172,7 +173,7 @@ namespace Wordler.Core
             _currentDiversity = 0;
             _winningIndex = 0;
             _runningDiversity = 0;
-            
+
 
             for (var i = 0; i < wordList.Count; i++)
             {
