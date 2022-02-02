@@ -51,17 +51,15 @@ for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
 
-    possibles.Clear();
-    possibles.AddRange(permanentList); // 520 bytes allocated
+    //possibles.Clear();
+    //possibles.AddRange(permanentList); // 520 bytes allocated
 
     var randomIndex = rand.Next(0, possibles.Count - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
     //answerWord = "doggo";
-    if (outPut)
-    {
-        Console.WriteLine(answerWord);
-    }
+    
+    if (outPut) { Console.WriteLine(answerWord); }
 
     var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut); // 21_280 bytes allocated
 
