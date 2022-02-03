@@ -55,9 +55,6 @@ for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
 
-    //possibles.Clear();
-    //possibles.AddRange(permanentList); // 520 bytes allocated
-
     var randomIndex = rand.Next(0, possibles.Length - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);

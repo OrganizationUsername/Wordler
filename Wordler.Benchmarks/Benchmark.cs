@@ -1,11 +1,10 @@
-﻿using System.Text;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using Wordler.Akari;
 using Wordler.Core;
 
 namespace Wordler.Benchmarks;
 
-[ShortRunJob]
+//[ShortRunJob]
 [MemoryDiagnoser]
 public class Benchmark
 {
@@ -41,7 +40,7 @@ public class Benchmark
         for (var i = 0; i < AllWordsArray.Length; i++) { intWords[i] = Solver.StringToInt(AllWordsArray[i]); }
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public string NaiveSolvePreProcessed()
     {
         foreach (var s in someWords)
@@ -51,7 +50,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark(Baseline = true)]
     public string NaiveSolve()
     {
         var intWords2 = new uint[AllWordsArray.Length];
