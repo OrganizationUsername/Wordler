@@ -5,11 +5,6 @@ using System.Linq;
 using Wordler.Core;
 /*
 ToDo: Make sure I'm doing all of this:
-- create a Set<> per letter (or an index per letter per position)
-- pick a word
-- exclude all Set<> for each discarded letter
-- exclude all Set<> for each yellow letter on THAT position
-- exclude all "per letter set" that don't have same green match
 - find all set from "untried letter" that contains all match Set or yellow letter
 - find intersection
 - use the word with the most unused letter but where each letter match possible condition abode
@@ -42,11 +37,20 @@ sw.Start();
 
 var rand = new Random(1);
 
-var possibles = oneTimeList.ToList();
+var possibles = oneTimeList.ToArray();
 Solver.GetAllocations(startMemory, "Before  Loop: " + Solver.Log());
 
 startMemory = GC.GetAllocatedBytesForCurrentThread();
 Solver solver = new Solver();
+
+
+
+//StringToInt(string ss)
+
+var intWords = new uint[possibles.Length];
+for (var i = 0; i < possibles.Length; i++) { intWords[i] = Solver.StringToInt(possibles[i]); }
+
+
 for (var s = 0; s < numberToTake; s++)
 {
     var guessesRemaining = 6;
@@ -54,14 +58,14 @@ for (var s = 0; s < numberToTake; s++)
     //possibles.Clear();
     //possibles.AddRange(permanentList); // 520 bytes allocated
 
-    var randomIndex = rand.Next(0, possibles.Count - 1);
+    var randomIndex = rand.Next(0, possibles.Length - 1);
     var answerWord = possibles[randomIndex];
     oneTimeList.Remove(answerWord);
     //answerWord = "doggo";
     
     if (outPut) { Console.WriteLine(answerWord); }
 
-    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut); // 21_280 bytes allocated
+    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut, intWords); // 21_280 bytes allocated
 
     //Solver.GetAllocations(startMemory, "After  Guess: " + Solver.Log());
     var success = result.All(x => x == 'G');

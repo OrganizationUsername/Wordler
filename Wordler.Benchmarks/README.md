@@ -1,4 +1,16 @@
 Current:
+|                 Method | Count |        Mean |       Error |    StdDev | Ratio | RatioSD | Allocated |
+|----------------------- |------ |------------:|------------:|----------:|------:|--------:|----------:|
+| NaiveSolvePreProcessed |     1 |    127.5 us |     9.25 us |   0.51 us |  1.00 |    0.00 |     555 B |
+|            AkariSolver |     1 |    220.1 us |     9.00 us |   0.49 us |  1.73 |    0.01 |         - |
+|                        |       |             |             |           |       |         |           |
+| NaiveSolvePreProcessed |    10 |  2,162.0 us |   367.63 us |  20.15 us |  1.00 |    0.00 |  10,482 B |
+|            AkariSolver |    10 |  2,474.0 us |   256.16 us |  14.04 us |  1.14 |    0.01 |       2 B |
+|                        |       |             |             |           |       |         |           |
+| NaiveSolvePreProcessed |   100 | 20,488.1 us |   155.59 us |   8.53 us |  1.00 |    0.00 | 113,108 B |
+|            AkariSolver |   100 | 24,123.1 us | 7,227.68 us | 396.17 us |  1.18 |    0.02 |      12 B |
+
+Previous:
 |                  Method | Count |              Mean |            Error |           StdDev |  Ratio | RatioSD |   Gen 0 |   Gen 1 |   Gen 2 |    Allocated |
 |------------------------ |------ |------------------:|-----------------:|-----------------:|-------:|--------:|--------:|--------:|--------:|-------------:|
 |              NaiveSolve |     1 |     179,153.34 ns |     3,560.900 ns |     8,998.849 ns |  1.000 |    0.00 | 10.7422 | 10.7422 | 10.7422 |    176,132 B |

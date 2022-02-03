@@ -21,6 +21,7 @@ namespace Wordler.Core
         byte[] AlreadyRequired = new byte[5];
         private char[] answers = new char[5];
         private char[] result = new char[5];
+        private uint intWord;
 
         public static List<string> GetLines() => File.ReadAllLines("FiveLetterWords.txt").ToList();
 
@@ -33,7 +34,8 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public unsafe string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut)
+        public unsafe string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess,
+            bool outPut, uint[] intWords)
         {
             string mostDiverseWord;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -48,7 +50,10 @@ namespace Wordler.Core
                 {
                     //var sw = new Stopwatch();
                     //sw.Start();
-                    var mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions, numbers);
+
+                    var intCountFilter = new (int letter, int minCount, int maxCount)[letterCountTuple.Length];
+                    for (int i = 0; i < letterCountTuple.Length; i++) { intCountFilter[i] = (letterCountTuple[i].letter - 'a', letterCountTuple[i].minCount, letterCountTuple[i].maxCount); }
+                    var mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions, numbers, intWords, intCountFilter);
 
                     //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={wordToGuess}, prune time: {sw.Elapsed.TotalMilliseconds}");
 
@@ -120,7 +125,7 @@ namespace Wordler.Core
             (char letter, int minCount, int maxCount)[] letterCountTuple,
             char[] goodLetterPositions,
             char[] badLetterPositions,
-            byte* numbers)
+            byte* numbers, uint[] intWords, (int letter, int minCount, int maxCount)[] intCountFilter)
         {
             int count;
             _currentDiversity = 0;
@@ -167,28 +172,47 @@ namespace Wordler.Core
 
                 if (numbers[i] == 1) continue;
 
+                //intWords
 
+                intWord = intWords[i];
 
-                foreach (var tuple in letterCountTuple)
+                foreach (var tuple in intCountFilter)
                 {
                     count = 0;
-                    if (word[0] == tuple.letter) count++;
-                    if (word[1] == tuple.letter) count++;
-                    if (word[2] == tuple.letter) count++;
-                    if (word[3] == tuple.letter) count++;
-                    if (word[4] == tuple.letter) count++;
+                    if ((0b11111 & (intWord >> 0 * 5)) == tuple.letter) count++;
+                    if ((0b11111 & (intWord >> 1 * 5)) == tuple.letter) count++;
+                    if ((0b11111 & (intWord >> 2 * 5)) == tuple.letter) count++;
+                    if ((0b11111 & (intWord >> 3 * 5)) == tuple.letter) count++;
+                    if ((0b11111 & (intWord >> 4 * 5)) == tuple.letter) count++;
 
                     if (count > tuple.maxCount || count < tuple.minCount)
                     {
-                        word = null;
-                        //wordList[i] = null;
                         numbers[i] = 1;
-#if DEBUG
-                        wordsDeletedByletterCountTuple++;
-#endif
                         break;
                     }
                 }
+
+
+                //                foreach (var tuple in letterCountTuple)
+                //                {
+                //                    count = 0;
+                //                    if (word[0] == tuple.letter) count++;
+                //                    if (word[1] == tuple.letter) count++;
+                //                    if (word[2] == tuple.letter) count++;
+                //                    if (word[3] == tuple.letter) count++;
+                //                    if (word[4] == tuple.letter) count++;
+
+                //                    if (count > tuple.maxCount || count < tuple.minCount)
+                //                    {
+                //                        word = null;
+                //                        //wordList[i] = null;
+                //                        numbers[i] = 1;
+                //#if DEBUG
+                //                        wordsDeletedByletterCountTuple++;
+                //#endif
+                //                        break;
+                //                    }
+                //                }
 
                 //Get most varied word
                 if (numbers[i] == 1) continue;
@@ -263,5 +287,17 @@ namespace Wordler.Core
             }
             return new(result);
         }
+
+        public static uint StringToInt(string ss)
+        {
+            uint l = 0;
+            for (var i = 0; i < 5; i++)
+            {
+                l |= (byte)(ss[i] - 'a');
+                l <<= 5;
+            }
+            return l >> 5;
+        }
     }
+
 }

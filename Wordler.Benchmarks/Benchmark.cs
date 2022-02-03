@@ -5,7 +5,7 @@ using Wordler.Core;
 
 namespace Wordler.Benchmarks;
 
-//[ShortRunJob]
+[ShortRunJob]
 [MemoryDiagnoser]
 public class Benchmark
 {
@@ -21,6 +21,7 @@ public class Benchmark
     private List<string> someWords = new();
     private string[] AllWordsArray;
     Solver solver = new Solver();
+    private uint[] intWords;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -36,16 +37,28 @@ public class Benchmark
         solver = new Solver();
         akariSolver = new();
         akariSolver.Initialize();
+        intWords = new uint[AllWordsArray.Length];
+        for (var i = 0; i < AllWordsArray.Length; i++) { intWords[i] = Solver.StringToInt(AllWordsArray[i]); }
     }
 
     [Benchmark(Baseline = true)]
-    public string NaiveSolve()
+    public string NaiveSolvePreProcessed()
     {
-        var reloadeableWords = new string[AllWordsArray.Length];
-        Array.Copy(AllWordsArray, reloadeableWords, reloadeableWords.Length);
         foreach (var s in someWords)
         {
-            solver.TryAnswersRemove(6, reloadeableWords, s, false);
+            solver.TryAnswersRemove(6, AllWordsArray, s, false, intWords);
+        }
+        return "";
+    }
+
+    //[Benchmark]
+    public string NaiveSolve()
+    {
+        var intWords2 = new uint[AllWordsArray.Length];
+        for (var i = 0; i < AllWordsArray.Length; i++) { intWords2[i] = Solver.StringToInt(AllWordsArray[i]); }
+        foreach (var s in someWords)
+        {
+            solver.TryAnswersRemove(6, AllWordsArray, s, false, intWords2);
         }
         return "";
     }
@@ -69,7 +82,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string CsaPreProcessedSolver()
     {
         int maxSteps = 0;
@@ -94,7 +107,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);
@@ -108,7 +121,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public int AkariSolver() => akariSolver.Solve(Count);
 
     //[Benchmark]
