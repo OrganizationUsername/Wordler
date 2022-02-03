@@ -1,4 +1,19 @@
 Current:
+|                 Method | Count |        Mean |     Error |    StdDev | Ratio | RatioSD |  Gen 0 |  Gen 1 |  Gen 2 | Allocated |
+|----------------------- |------ |------------:|----------:|----------:|------:|--------:|-------:|-------:|-------:|----------:|
+| NaiveSolvePreProcessed |     1 |    126.7 us |   1.69 us |   1.58 us |  0.55 |    0.02 |      - |      - |      - |     432 B |
+|             NaiveSolve |     1 |    233.3 us |   4.56 us |   6.96 us |  1.00 |    0.00 | 6.8359 | 6.8359 | 6.8359 |  88,287 B |
+|            AkariSolver |     1 |    216.4 us |   1.20 us |   0.93 us |  0.95 |    0.03 |      - |      - |      - |         - |
+|                        |       |             |           |           |       |         |        |        |        |           |
+| NaiveSolvePreProcessed |    10 |  2,324.9 us |  15.12 us |  14.14 us |  0.96 |    0.01 |      - |      - |      - |   8,162 B |
+|             NaiveSolve |    10 |  2,412.5 us |  17.47 us |  15.49 us |  1.00 |    0.00 |      - |      - |      - |  95,994 B |
+|            AkariSolver |    10 |  2,159.5 us |  18.48 us |  17.29 us |  0.90 |    0.01 |      - |      - |      - |       2 B |
+|                        |       |             |           |           |       |         |        |        |        |           |
+| NaiveSolvePreProcessed |   100 | 22,349.2 us | 253.89 us | 237.49 us |  0.99 |    0.01 |      - |      - |      - |  88,092 B |
+|             NaiveSolve |   100 | 22,582.3 us | 151.20 us | 141.43 us |  1.00 |    0.00 |      - |      - |      - | 175,924 B |
+|            AkariSolver |   100 | 21,577.8 us | 173.92 us | 162.68 us |  0.96 |    0.01 |      - |      - |      - |      21 B |
+
+Previous:
 |                 Method | Count |        Mean |     Error |    StdDev | Ratio |            Gen 0 |  Gen 1 |  Gen 2 | Allocated |
 |----------------------- |------ |------------:|----------:|----------:|------:|          -------:|-------:|-------:|----------:|
 | NaiveSolvePreProcessed |     1 |    119.1 us |   0.68 us |   0.60 us |  0.52 |                - |      - |      - |     496 B |
