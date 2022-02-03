@@ -34,8 +34,7 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public unsafe string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess,
-            bool outPut, uint[] intWords)
+        public unsafe string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut, uint[] intWords)
         {
             string mostDiverseWord;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -74,44 +73,17 @@ namespace Wordler.Core
                 Array.Clear(badLetterPositions);
 
 #if DEBUG
-                if (wordList.Count(x => x is not null) == 0 && wordToGuess != mostDiverseWord){Debugger.Break();}
-                if (outPut) { Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {wordList.Count(c => c is not null) + 1} words."); }
+                if (outPut)
+                {
+                    var remainingWordCount = 0; for (int i = 0; i < wordList.Count; i++) { if (numbers[i] == 0) { remainingWordCount++; } }
+                    Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {remainingWordCount + 1} words.");
+                }
 #endif
                 _result = EvaluateResponse(mostDiverseWord, wordToGuess);
 
                 if (_result == "     ") { continue; }
 
-                for (var i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
-                {
-                    var index = mostDiverseWord[i] - 'a';
-                    letterResults[index].bad += (_result[i] == 'X' ? 1 : 0);
-                    letterResults[index].wrong += (_result[i] == 'Y' ? 1 : 0);
-                    letterResults[index].good += (_result[i] == 'G' ? 1 : 0);
-
-                    if (_result[i] == 'Y' && AlreadyForbidden[index, i] == 0) { badLetterPositions[i] = mostDiverseWord[i]; AlreadyForbidden[index, i] = 1; }
-                    if (_result[i] == 'G' && AlreadyRequired[i] == 0) { goodLetterPositions[i] = mostDiverseWord[i]; AlreadyRequired[i] = 1; }
-                }
-
-                var maxTempIndex = 0;
-                for (var i = 0; i < letterResults.Length; i++)
-                {
-                    if (letterResults[i].bad + letterResults[i].wrong + letterResults[i].good > 0)
-                    {
-                        trimList[maxTempIndex] = ((char)('a' + i), letterResults[i].bad, letterResults[i].wrong, letterResults[i].good);
-                        letterResults[i] = (0, 0, 0);
-                        maxTempIndex++;
-                    }
-                }
-
-                var letterCountTupleCount = 0;
-                for (var i = 0; i < maxTempIndex; i++)
-                {
-                    var upperLimit = int.MaxValue;
-                    if (trimList[i].bad > 0) { /*Then we know the upper limit*/ upperLimit = trimList[i].good + trimList[i].wrong; }
-                    var lowerLimit = trimList[i].good + trimList[i].wrong;
-                    letterCountTuple[letterCountTupleCount] = ((trimList[i].letter, lowerLimit, upperLimit));
-                    letterCountTupleCount++;
-                }
+                SetPruners(mostDiverseWord);
 
                 guessesRemaining1--;
 #if DEBUG
@@ -119,6 +91,56 @@ namespace Wordler.Core
 #endif
             }
             return _result;
+        }
+
+        private void SetPruners(string mostDiverseWord)
+        {
+            for (var i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
+            {
+                var index = mostDiverseWord[i] - 'a';
+                letterResults[index].bad += (_result[i] == 'X' ? 1 : 0);
+                letterResults[index].wrong += (_result[i] == 'Y' ? 1 : 0);
+                letterResults[index].good += (_result[i] == 'G' ? 1 : 0);
+
+                if (_result[i] == 'Y' && AlreadyForbidden[index, i] == 0)
+                {
+                    badLetterPositions[i] = mostDiverseWord[i];
+                    AlreadyForbidden[index, i] = 1;
+                }
+
+                if (_result[i] == 'G' && AlreadyRequired[i] == 0)
+                {
+                    goodLetterPositions[i] = mostDiverseWord[i];
+                    AlreadyRequired[i] = 1;
+                }
+            }
+
+            var maxTempIndex = 0;
+            for (var i = 0; i < letterResults.Length; i++)
+            {
+                if (letterResults[i].bad + letterResults[i].wrong + letterResults[i].good > 0)
+                {
+                    trimList[maxTempIndex] = ((char)('a' + i), letterResults[i].bad, letterResults[i].wrong,
+                        letterResults[i].good);
+                    letterResults[i] = (0, 0, 0);
+                    maxTempIndex++;
+                }
+            }
+
+            var letterCountTupleCount = 0;
+            for (var i = 0; i < maxTempIndex; i++)
+            {
+                var upperLimit = int.MaxValue;
+                if (trimList[i].bad > 0)
+                {
+                    /*Then we know the upper limit*/
+                    upperLimit = trimList[i].good + trimList[i].wrong;
+                }
+
+                var lowerLimit = trimList[i].good + trimList[i].wrong;
+                letterCountTuple[letterCountTupleCount] = ((trimList[i].letter, lowerLimit, upperLimit));
+                letterCountTupleCount++;
+            }
         }
 
         public unsafe int PrunePossibleWords(IList<string> wordList,

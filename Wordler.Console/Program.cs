@@ -12,7 +12,7 @@ ToDo: Make sure I'm doing all of this:
 idea: maximize "un-used letter" that still have match on yellow/green letter
  */
 
-var outPut = false;
+var outPut = true;
 long startMemory = GC.GetAllocatedBytesForCurrentThread();
 if (!File.Exists("FiveLetterWords.txt"))
 {
@@ -43,10 +43,6 @@ Solver.GetAllocations(startMemory, "Before  Loop: " + Solver.Log());
 startMemory = GC.GetAllocatedBytesForCurrentThread();
 Solver solver = new Solver();
 
-
-
-//StringToInt(string ss)
-
 var intWords = new uint[possibles.Length];
 for (var i = 0; i < possibles.Length; i++) { intWords[i] = Solver.StringToInt(possibles[i]); }
 
@@ -71,7 +67,7 @@ for (var s = 0; s < numberToTake; s++)
     {
         if (success) { Console.WriteLine($"Good job."); }
         else { Console.WriteLine($"Failure."); }
-        if (possibles.Count(c => string.IsNullOrEmpty(c)) < 100) { Console.WriteLine($"{string.Join(", ", possibles.Where(c => c is not null))}"); }
+        //if (possibles.Count(c => string.IsNullOrEmpty(c)) < 100) { Console.WriteLine($"{string.Join(", ", possibles.Where(c => c is not null))}"); }
     }
 }
 
