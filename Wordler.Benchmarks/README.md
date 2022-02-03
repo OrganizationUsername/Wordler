@@ -1,4 +1,19 @@
 Current:
+|                 Method | Count |        Mean |     Error |    StdDev | Ratio |            Gen 0 |  Gen 1 |  Gen 2 | Allocated |
+|----------------------- |------ |------------:|----------:|----------:|------:|          -------:|-------:|-------:|----------:|
+| NaiveSolvePreProcessed |     1 |    119.1 us |   0.68 us |   0.60 us |  0.52 |                - |      - |      - |     496 B |
+|             NaiveSolve |     1 |    230.7 us |   3.14 us |   2.79 us |  1.00 |           6.5918 | 6.5918 | 6.5918 |  88,351 B |
+|            AkariSolver |     1 |    219.1 us |   1.17 us |   1.09 us |  0.95 |                - |      - |      - |         - |
+|                        |       |             |           |           |       |                  |        |        |           |
+| NaiveSolvePreProcessed |    10 |  2,389.7 us |  27.48 us |  25.70 us |  0.97 |                - |      - |      - |   9,026 B |
+|             NaiveSolve |    10 |  2,453.2 us |  21.17 us |  18.77 us |  1.00 |                - |      - |      - |  96,859 B |
+|            AkariSolver |    10 |  2,219.3 us |  27.41 us |  25.64 us |  0.91 |                - |      - |      - |       2 B |
+|                        |       |             |           |           |       |                  |        |        |           |
+| NaiveSolvePreProcessed |   100 | 22,893.1 us | 329.82 us | 308.51 us |  1.01 |                - |      - |      - |  97,036 B |
+|             NaiveSolve |   100 | 22,719.3 us | 167.92 us | 157.07 us |  1.00 |                - |      - |      - | 184,868 B |
+|            AkariSolver |   100 | 22,008.3 us | 154.66 us | 129.15 us |  0.97 |                - |      - |      - |      21 B |
+
+Previous:
 |                 Method | Count |        Mean |     Error |    StdDev | Ratio | RatioSD |  Gen 0 |  Gen 1 |  Gen 2 | Allocated |
 |----------------------- |------ |------------:|----------:|----------:|------:|--------:|-------:|-------:|-------:|----------:|
 | NaiveSolvePreProcessed |     1 |    128.5 us |   1.43 us |   1.34 us |  0.59 |    0.01 |      - |      - |      - |     552 B |

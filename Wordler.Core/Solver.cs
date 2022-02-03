@@ -12,11 +12,11 @@ namespace Wordler.Core
         private int _runningDiversity;
         private int _currentDiversity;
         private int _winningIndex;
-        (int bad, int wrong, int good)[] letterResults = new (int, int, int)[26];//Get a unique list of letters
+        (byte bad, byte wrong, byte good)[] letterResults = new (byte, byte, byte)[26];//Get a unique list of letters
         public char[] goodLetterPositions = new char[5];
         public char[] badLetterPositions = new char[5];
-        (char letter, int minCount, int maxCount)[] letterCountTuple = new (char letter, int minCount, int maxCount)[5];
-        private (char letter, int bad, int wrong, int good)[] trimList = new (char letter, int bad, int wrong, int good)[5];
+        (char letter, byte minCount, byte maxCount)[] letterCountTuple = new (char letter, byte minCount, byte maxCount)[5];
+        private (char letter, byte bad, byte wrong, byte good)[] trimList = new (char letter, byte bad, byte wrong, byte good)[5];
         byte[,] AlreadyForbidden = new byte[26, 5];
         byte[] AlreadyRequired = new byte[5];
         private char[] answers = new char[5];
@@ -50,8 +50,8 @@ namespace Wordler.Core
                     //var sw = new Stopwatch();
                     //sw.Start();
 
-                    var intCountFilter = new (int letter, int minCount, int maxCount)[letterCountTuple.Length];
-                    for (int i = 0; i < letterCountTuple.Length; i++) { intCountFilter[i] = (letterCountTuple[i].letter - 'a', letterCountTuple[i].minCount, letterCountTuple[i].maxCount); }
+                    var intCountFilter = new (byte letter, byte minCount, byte maxCount)[letterCountTuple.Length];
+                    for (int i = 0; i < letterCountTuple.Length; i++) { intCountFilter[i] = ((byte)(letterCountTuple[i].letter - 'a'), letterCountTuple[i].minCount, letterCountTuple[i].maxCount); }
                     var mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions, numbers, intWords, intCountFilter);
 
                     //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={wordToGuess}, prune time: {sw.Elapsed.TotalMilliseconds}");
@@ -98,9 +98,9 @@ namespace Wordler.Core
             for (var i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
             {
                 var index = mostDiverseWord[i] - 'a';
-                letterResults[index].bad += (_result[i] == 'X' ? 1 : 0);
-                letterResults[index].wrong += (_result[i] == 'Y' ? 1 : 0);
-                letterResults[index].good += (_result[i] == 'G' ? 1 : 0);
+                letterResults[index].bad += (byte)(_result[i] == 'X' ? 1 : 0);
+                letterResults[index].wrong += (byte)(_result[i] == 'Y' ? 1 : 0);
+                letterResults[index].good += (byte)(_result[i] == 'G' ? 1 : 0);
 
                 if (_result[i] == 'Y' && AlreadyForbidden[index, i] == 0)
                 {
@@ -120,8 +120,7 @@ namespace Wordler.Core
             {
                 if (letterResults[i].bad + letterResults[i].wrong + letterResults[i].good > 0)
                 {
-                    trimList[maxTempIndex] = ((char)('a' + i), letterResults[i].bad, letterResults[i].wrong,
-                        letterResults[i].good);
+                    trimList[maxTempIndex] = ((char)('a' + i), letterResults[i].bad, letterResults[i].wrong, letterResults[i].good);
                     letterResults[i] = (0, 0, 0);
                     maxTempIndex++;
                 }
@@ -130,24 +129,24 @@ namespace Wordler.Core
             var letterCountTupleCount = 0;
             for (var i = 0; i < maxTempIndex; i++)
             {
-                var upperLimit = int.MaxValue;
+                var upperLimit = byte.MaxValue;
                 if (trimList[i].bad > 0)
                 {
                     /*Then we know the upper limit*/
-                    upperLimit = trimList[i].good + trimList[i].wrong;
+                    upperLimit = (byte)(trimList[i].good + trimList[i].wrong);
                 }
 
-                var lowerLimit = trimList[i].good + trimList[i].wrong;
+                byte lowerLimit = (byte)(trimList[i].good + trimList[i].wrong);
                 letterCountTuple[letterCountTupleCount] = ((trimList[i].letter, lowerLimit, upperLimit));
                 letterCountTupleCount++;
             }
         }
 
         public unsafe int PrunePossibleWords(IList<string> wordList,
-            (char letter, int minCount, int maxCount)[] letterCountTuple,
+            (char letter, byte minCount, byte maxCount)[] letterCountTuple,
             char[] goodLetterPositions,
             char[] badLetterPositions,
-            byte* numbers, uint[] intWords, (int letter, int minCount, int maxCount)[] intCountFilter)
+            byte* numbers, uint[] intWords, (byte letter, byte minCount, byte maxCount)[] intCountFilter)
         {
             int count;
             _currentDiversity = 0;
