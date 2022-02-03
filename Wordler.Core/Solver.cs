@@ -22,6 +22,7 @@ namespace Wordler.Core
         private char[] answers = new char[5];
         private char[] result = new char[5];
         private uint intWord;
+        private int[] intResult;
 
         public static List<string> GetLines() => File.ReadAllLines("FiveLetterWords.txt").ToList();
 
@@ -34,7 +35,7 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public unsafe string TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut, uint[] intWords)
+        public unsafe int[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut, uint[] intWords)
         {
             string mostDiverseWord;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -79,18 +80,18 @@ namespace Wordler.Core
                     Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {remainingWordCount + 1} words.");
                 }
 #endif
-                _result = EvaluateResponse(mostDiverseWord, wordToGuess);
-
-                if (_result == "     ") { continue; }
+                (_result, intResult) = EvaluateResponse(mostDiverseWord, wordToGuess);
+                //_result = "";
+                if (/*_result == "     " ||*/ intResult[0] + intResult[1] + intResult[2] + intResult[3] + intResult[4] == 0) { continue; }
 
                 SetPruners(mostDiverseWord);
 
                 guessesRemaining1--;
 #if DEBUG
-                if (outPut) { Console.WriteLine(new string(_result.ToArray())); }
+                //if (outPut) { Console.WriteLine(new string(_result.ToArray())); }
 #endif
             }
-            return _result;
+            return intResult;
         }
 
         private void SetPruners(string mostDiverseWord)
@@ -98,17 +99,17 @@ namespace Wordler.Core
             for (var i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
             {
                 var index = mostDiverseWord[i] - 'a';
-                letterResults[index].bad += (byte)(_result[i] == 'X' ? 1 : 0);
-                letterResults[index].wrong += (byte)(_result[i] == 'Y' ? 1 : 0);
-                letterResults[index].good += (byte)(_result[i] == 'G' ? 1 : 0);
+                letterResults[index].bad += (byte)(intResult[i] == 1 ? 1 : 0);
+                letterResults[index].wrong += (byte)(intResult[i] == 2 ? 1 : 0);
+                letterResults[index].good += (byte)(intResult[i] == 3 ? 1 : 0);
 
-                if (_result[i] == 'Y' && AlreadyForbidden[index, i] == 0)
+                if (intResult[i] == 2 && AlreadyForbidden[index, i] == 0)
                 {
                     badLetterPositions[i] = mostDiverseWord[i];
                     AlreadyForbidden[index, i] = 1;
                 }
 
-                if (_result[i] == 'G' && AlreadyRequired[i] == 0)
+                if (intResult[i] == 3 && AlreadyRequired[i] == 0)
                 {
                     goodLetterPositions[i] = mostDiverseWord[i];
                     AlreadyRequired[i] = 1;
@@ -263,8 +264,10 @@ namespace Wordler.Core
             return _winningIndex;
         }
 
-        public string EvaluateResponse(string guessLetters, string targetWord)
+        public (string, int[]) EvaluateResponse(string guessLetters, string targetWord)
         {
+            var intResult = new int[5]; //0 = blank, 1 = X, 2 = Y, 3 = G
+            Array.Clear(intResult);
             result[0] = ' ';
             result[1] = ' ';
             result[2] = ' ';
@@ -278,6 +281,7 @@ namespace Wordler.Core
             {
                 if (guessLetters[i] == targetWord[i])
                 {
+                    intResult[i] = 3;
                     result[i] = 'G';
                     answers[i] = ' ';
                 }
@@ -285,7 +289,8 @@ namespace Wordler.Core
 
             for (var i = 0; i < 5; i++)
             {
-                if (result[i] != ' ') { continue; }
+
+                if (result[i] != ' ' || intResult[i] != 0) { continue; }
 
                 var index = -1;
 
@@ -300,13 +305,16 @@ namespace Wordler.Core
 
                 if (index == -1)
                 {
+                    intResult[i] = 1;
                     result[i] = 'X';
                     continue;
                 }
+
+                intResult[i] = 2;
                 result[i] = 'Y';
                 answers[index] = ' ';
             }
-            return new(result);
+            return (new(result), intResult);
         }
 
         public static uint StringToInt(string ss)
