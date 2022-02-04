@@ -36,7 +36,7 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public unsafe int[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut, uint[] intWords)
+        public unsafe int[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string answerWord, bool outPut, uint[] intWords, uint answerInt)
         {
             uint mostDiverseUint;
             string mostDiverseWord;
@@ -57,7 +57,7 @@ namespace Wordler.Core
                     for (int i = 0; i < letterCountTuple.Length; i++) { intCountFilter[i] = ((byte)(letterCountTuple[i].letter - 'a'), letterCountTuple[i].minCount, letterCountTuple[i].maxCount); }
                     var mostDiverseWordIndex = PrunePossibleWords(letterCountTuple, goodLetterPositions, badLetterPositions, numbers, intWords, intCountFilter);
 
-                    //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={wordToGuess}, prune time: {sw.Elapsed.TotalMilliseconds}");
+                    //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={answerWord}, prune time: {sw.Elapsed.TotalMilliseconds}");
 
                     mostDiverseUint = intWords[mostDiverseWordIndex];
                     mostDiverseWord = wordList[mostDiverseWordIndex];
@@ -84,10 +84,10 @@ namespace Wordler.Core
                     //Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {remainingWordCount + 1} words.");
                 }
 #endif
-                intResult = EvaluateResponse(mostDiverseWord, wordToGuess);
+                intResult = EvaluateResponse(mostDiverseWord, answerWord, answerInt, mostDiverseUint);
                 if (intResult[0] + intResult[1] + intResult[2] + intResult[3] + intResult[4] == 0) { continue; }
 
-                SetPruners(mostDiverseWord, mostDiverseUint);
+                SetPruners(mostDiverseUint);
 
                 guessesRemaining1--;
 #if DEBUG
@@ -97,7 +97,7 @@ namespace Wordler.Core
             return intResult;
         }
 
-        private void SetPruners(string mostDiverseWord, uint mostDiverseUint)
+        private void SetPruners(uint mostDiverseUint)
         {
             for (var i = 0; i < 5; i++) //Very small loop.
             {
@@ -238,20 +238,22 @@ namespace Wordler.Core
             return _winningIndex;
         }
 
-        public int[] EvaluateResponse(string guessLetters, string targetWord)
+        public int[] EvaluateResponse(string guessWord, string targetWord, uint answerInt, uint guessUint)
         {
             intResult = new int[5]; //0 = blank, 1 = X, 2 = Y, 3 = G
             Array.Clear(intResult);
 
-            //if (guessLetters.Length != 5) return "     ";
+            //if (guessWord.Length != 5) return "     ";
             answers = targetWord.ToArray();
 
             for (var i = 0; i < 5; i++)
             {
-                if (guessLetters[i] == targetWord[i])
+                var test = (0b11111 & (answerInt >> (4 - i) * 5)) == (0b11111 & (guessUint >> (4 - i) * 5));
+                if ((byte)(0b11111 & (answerInt >> (4 - i) * 5)) == (byte)(0b11111 & (guessUint >> (4 - i) * 5)))
                 {
                     intResult[i] = 3;
                     answers[i] = ' ';
+                    answerInt |= (uint)(0b11111 >> (4 - i) * 5);
                 }
             }
 
@@ -264,7 +266,7 @@ namespace Wordler.Core
 
                 for (var index1 = 0; index1 < 5; index1++)
                 {
-                    if (answers[index1] == guessLetters[i])
+                    if (answers[index1] == guessWord[i] && (0b11111 & (answerInt >> (4 - index1) * 5)) == (0b11111 & (guessUint >> (4 - i) * 5)))
                     {
                         index = index1;
                         break;
@@ -279,6 +281,7 @@ namespace Wordler.Core
 
                 intResult[i] = 2;
                 answers[index] = ' ';
+                answerInt |= (uint)(0b11111 << ((4 - index) * 5));
             }
             return intResult;
         }
