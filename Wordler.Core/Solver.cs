@@ -14,7 +14,9 @@ namespace Wordler.Core
         private int _winningIndex;
         (byte bad, byte wrong, byte good)[] letterResults = new (byte, byte, byte)[26];//Get a unique list of letters
         public char[] goodLetterPositions = new char[5];
+        public byte[] goodBytePositions = new byte[5];
         public char[] badLetterPositions = new char[5];
+        public byte[] badBytePositions = new byte[5];
         (char letter, byte minCount, byte maxCount)[] letterCountTuple = new (char letter, byte minCount, byte maxCount)[5];
         private (char letter, byte bad, byte wrong, byte good)[] trimList = new (char letter, byte bad, byte wrong, byte good)[5];
         byte[,] AlreadyForbidden = new byte[26, 5];
@@ -36,13 +38,14 @@ namespace Wordler.Core
 
         public unsafe int[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string wordToGuess, bool outPut, uint[] intWords)
         {
+            uint mostDiverseUint;
             string mostDiverseWord;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
             Array.Clear(_diversityCharacters);
             Array.Clear(AlreadyForbidden);
             Array.Clear(AlreadyRequired);
             Array.Clear(intResult);
-            byte* numbers = stackalloc byte[wordList.Count];
+            byte* numbers = stackalloc byte[intWords.Length];
             while (guessesRemaining1 > 0 && intResult[0] + intResult[1] + intResult[2] + intResult[3] + intResult[4] != 15)
             {
                 if (guessesRemaining1 < 6)
@@ -52,16 +55,18 @@ namespace Wordler.Core
 
                     var intCountFilter = new (byte letter, byte minCount, byte maxCount)[letterCountTuple.Length];
                     for (int i = 0; i < letterCountTuple.Length; i++) { intCountFilter[i] = ((byte)(letterCountTuple[i].letter - 'a'), letterCountTuple[i].minCount, letterCountTuple[i].maxCount); }
-                    var mostDiverseWordIndex = PrunePossibleWords(wordList, letterCountTuple, goodLetterPositions, badLetterPositions, numbers, intWords, intCountFilter);
+                    var mostDiverseWordIndex = PrunePossibleWords(letterCountTuple, goodLetterPositions, badLetterPositions, numbers, intWords, intCountFilter);
 
                     //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={wordToGuess}, prune time: {sw.Elapsed.TotalMilliseconds}");
 
+                    mostDiverseUint = intWords[mostDiverseWordIndex];
                     mostDiverseWord = wordList[mostDiverseWordIndex];
                     numbers[mostDiverseWordIndex] = 1;
                     _maxDiversity = Math.Min(_maxDiversity, _runningDiversity);
                 }
                 else
                 {
+                    mostDiverseUint = intWords[41];
                     mostDiverseWord = wordList[41];
                     //wordList[41] = null;
                     numbers[41] = 1;
@@ -76,13 +81,13 @@ namespace Wordler.Core
                 if (outPut)
                 {
                     var remainingWordCount = 0; for (int i = 0; i < wordList.Count; i++) { if (numbers[i] == 0) { remainingWordCount++; } }
-                    Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {remainingWordCount + 1} words.");
+                    //Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {remainingWordCount + 1} words.");
                 }
 #endif
                 intResult = EvaluateResponse(mostDiverseWord, wordToGuess);
                 if (intResult[0] + intResult[1] + intResult[2] + intResult[3] + intResult[4] == 0) { continue; }
 
-                SetPruners(mostDiverseWord);
+                SetPruners(mostDiverseWord, mostDiverseUint);
 
                 guessesRemaining1--;
 #if DEBUG
@@ -92,24 +97,26 @@ namespace Wordler.Core
             return intResult;
         }
 
-        private void SetPruners(string mostDiverseWord)
+        private void SetPruners(string mostDiverseWord, uint mostDiverseUint)
         {
-            for (var i = 0; i < mostDiverseWord.Length; i++) //Very small loop.
+            for (var i = 0; i < 5; i++) //Very small loop.
             {
-                var index = mostDiverseWord[i] - 'a';
+                badBytePositions[i] = byte.MaxValue;
+                goodBytePositions[i] = byte.MaxValue;
+                var index = (byte)(0b11111 & (mostDiverseUint >> (20 - 5 * i)));
                 letterResults[index].bad += (byte)(intResult[i] == 1 ? 1 : 0);
                 letterResults[index].wrong += (byte)(intResult[i] == 2 ? 1 : 0);
                 letterResults[index].good += (byte)(intResult[i] == 3 ? 1 : 0);
 
                 if (intResult[i] == 2 && AlreadyForbidden[index, i] == 0)
                 {
-                    badLetterPositions[i] = mostDiverseWord[i];
+                    badBytePositions[i] = (byte)(0b11111 & (mostDiverseUint >> (20 - 5 * i)));
                     AlreadyForbidden[index, i] = 1;
                 }
 
                 if (intResult[i] == 3 && AlreadyRequired[i] == 0)
                 {
-                    goodLetterPositions[i] = mostDiverseWord[i];
+                    goodBytePositions[i] = (byte)(0b11111 & (mostDiverseUint >> (20 - 5 * i)));
                     AlreadyRequired[i] = 1;
                 }
             }
@@ -141,7 +148,7 @@ namespace Wordler.Core
             }
         }
 
-        public unsafe int PrunePossibleWords(IList<string> wordList,
+        public unsafe int PrunePossibleWords(
             (char letter, byte minCount, byte maxCount)[] letterCountTuple,
             char[] goodLetterPositions,
             char[] badLetterPositions,
@@ -155,19 +162,16 @@ namespace Wordler.Core
             var wordsDeletedByletterCountTuple = 0;
             var wordsDeltedByPosition = 0;
 #endif
-
-            for (var i = 0; i < wordList.Count; i++)
+            for (var i = 0; i < intWords.Length; i++)
             {
                 if (numbers[i] == 1) continue;
-                var word = wordList[i];
+                intWord = intWords[i];
                 for (var index = 0; index < 5; index++)
                 {
-                    if (badLetterPositions[index] != '\0')
+                    if (badBytePositions[index] != byte.MaxValue) //It was set, MaxValue is default since 'a'=0. :(
                     {
-                        if (word[index] == badLetterPositions[index])
+                        if ((byte)(0b11111 & (intWord >> (4 - index) * 5)) == badBytePositions[index])
                         {
-                            word = null;
-                            //wordList[i] = null;
                             numbers[i] = 1;
 #if DEBUG
                             wordsDeltedByPosition++;
@@ -175,12 +179,10 @@ namespace Wordler.Core
                             break;
                         }
                     }
-                    if (goodLetterPositions[index] != '\0')
+                    if (goodBytePositions[index] != byte.MaxValue)
                     {
-                        if (word[index] != goodLetterPositions[index])
+                        if ((byte)(0b11111 & (intWord >> (4 - index) * 5)) != goodBytePositions[index])
                         {
-                            word = null;
-                            //wordList[i] = null;
                             numbers[i] = 1;
 #if DEBUG
                             wordsDeltedByPosition++;
@@ -191,10 +193,6 @@ namespace Wordler.Core
                 }
 
                 if (numbers[i] == 1) continue;
-
-                //intWords
-
-                intWord = intWords[i];
 
                 foreach (var tuple in intCountFilter)
                 {
@@ -216,10 +214,10 @@ namespace Wordler.Core
                 if (numbers[i] == 1) continue;
                 if (_currentDiversity == _maxDiversity) continue;
                 Array.Clear(_diversityCharacters);
-                for (var j = 0; j < word.Length; j++)
+                for (var j = 0; j < 5; j++)
                 {
-                    var c = word[j];
-                    _diversityCharacters[c - 'a']++;
+                    //var c = word[j];
+                    _diversityCharacters[(0b11111 & (intWord >> (4 - j) * 5))]++;
                 }
                 _currentDiversity = 0;
                 for (var j = 0; j < _diversityCharacters.Length; j++)
@@ -235,7 +233,7 @@ namespace Wordler.Core
             }
 #if DEBUG
             Trace.WriteLine($"Words deleted by letterCount: {wordsDeletedByletterCountTuple} with {letterCountTuple.Length} letter filters. {string.Join(",", letterCountTuple.Select(l => $"{l.letter} {l.minCount}=>{(l.maxCount > 5 ? -1 : l.maxCount)}"))})");
-            Trace.WriteLine($"Words deleted by Position: {wordsDeltedByPosition} with '{new string(badLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' bad and '{new string(goodLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' good.");
+            //Trace.WriteLine($"Words deleted by Position: {wordsDeltedByPosition} with '{new string(badLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' bad and '{new string(goodLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' good.");
 #endif
             return _winningIndex;
         }
