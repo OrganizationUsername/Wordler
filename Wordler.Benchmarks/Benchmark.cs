@@ -43,10 +43,12 @@ public class Benchmark
     [Benchmark]
     public string NaiveSolvePreProcessed()
     {
-        foreach (var s in someWords)
+        for (var index = 0; index < someWords.Count; index++)
         {
+            var s = someWords[index];
             solver.TryAnswersRemove(6, false, intWords, Solver.StringToInt(s));
         }
+
         return "";
     }
 
@@ -55,8 +57,10 @@ public class Benchmark
     {
         var intWords2 = new uint[AllWordsArray.Length];
         for (var i = 0; i < AllWordsArray.Length; i++) { intWords2[i] = Solver.StringToInt(AllWordsArray[i]); }
-        foreach (var s in someWords)
+
+        for (var index = 0; index < someWords.Count; index++)
         {
+            var s = someWords[index];
             solver.TryAnswersRemove(6, false, intWords, Solver.StringToInt(s));
         }
         return "";
