@@ -58,9 +58,7 @@ for (var s = 0; s < numberToTake; s++)
 
     if (outPut) { Console.WriteLine(answerWord); }
 
-    
-
-    var result = solver.TryAnswersRemove(guessesRemaining, possibles, answerWord, outPut, intWords, Solver.StringToInt(answerWord)); // 21_280 bytes allocated
+    var result = solver.TryAnswersRemove(guessesRemaining, outPut, intWords, Solver.StringToInt(answerWord)); // 21_280 bytes allocated
 
     //Solver.GetAllocations(startMemory, "After  Guess: " + Solver.Log());
     var success = result[0] + result[1] + result[2] + result[3] + result[4] == 15;

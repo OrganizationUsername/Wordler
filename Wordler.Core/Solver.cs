@@ -6,22 +6,18 @@ namespace Wordler.Core
     public struct Solver
     {
         private long _startMemory;
-        private string _result;
         private int _maxDiversity = 5;
         private readonly int[] _diversityCharacters = new int[26];
         private int _runningDiversity;
         private int _currentDiversity;
         private int _winningIndex;
-        (byte bad, byte wrong, byte good)[] letterResults = new (byte, byte, byte)[26];//Get a unique list of letters
-        public char[] goodLetterPositions = new char[5];
+        readonly (byte bad, byte wrong, byte good)[] letterResults = new (byte, byte, byte)[26];//Get a unique list of letters
         public byte[] goodBytePositions = new byte[5];
-        public char[] badLetterPositions = new char[5];
         public byte[] badBytePositions = new byte[5];
-        (char letter, byte minCount, byte maxCount)[] letterCountTuple = new (char letter, byte minCount, byte maxCount)[5];
-        private (char letter, byte bad, byte wrong, byte good)[] trimList = new (char letter, byte bad, byte wrong, byte good)[5];
-        byte[,] AlreadyForbidden = new byte[26, 5];
-        byte[] AlreadyRequired = new byte[5];
-        private char[] answers = new char[5];
+        readonly (byte letter, byte minCount, byte maxCount)[] intCountFilter = new (byte letter, byte minCount, byte maxCount)[5];
+        private readonly (byte letter, byte bad, byte wrong, byte good)[] trimList = new (byte letter, byte bad, byte wrong, byte good)[5];
+        readonly byte[,] AlreadyForbidden = new byte[26, 5];
+        readonly byte[] AlreadyRequired = new byte[5];
         private uint intWord;
         private int[] intResult = new int[5];
 
@@ -36,15 +32,15 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public unsafe int[] TryAnswersRemove(int guessesRemaining1, IList<string> wordList, string answerWord, bool outPut, uint[] intWords, uint answerInt)
+        public unsafe int[] TryAnswersRemove(int guessesRemaining1, bool outPut, uint[] intWords, uint answerInt)
         {
             uint mostDiverseUint;
-            string mostDiverseWord;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
             Array.Clear(_diversityCharacters);
             Array.Clear(AlreadyForbidden);
             Array.Clear(AlreadyRequired);
             Array.Clear(intResult);
+
             byte* numbers = stackalloc byte[intWords.Length];
             while (guessesRemaining1 > 0 && intResult[0] + intResult[1] + intResult[2] + intResult[3] + intResult[4] != 15)
             {
@@ -52,47 +48,26 @@ namespace Wordler.Core
                 {
                     //var sw = new Stopwatch();
                     //sw.Start();
-
-                    var intCountFilter = new (byte letter, byte minCount, byte maxCount)[letterCountTuple.Length];
-                    for (int i = 0; i < letterCountTuple.Length; i++) { intCountFilter[i] = ((byte)(letterCountTuple[i].letter - 'a'), letterCountTuple[i].minCount, letterCountTuple[i].maxCount); }
-                    var mostDiverseWordIndex = PrunePossibleWords(letterCountTuple, goodLetterPositions, badLetterPositions, numbers, intWords, intCountFilter);
-
-                    //Trace.WriteLine($"Guesses remaining: {guessesRemaining1}, target={answerWord}, prune time: {sw.Elapsed.TotalMilliseconds}");
+                    var mostDiverseWordIndex = PrunePossibleWords(numbers, intWords, intCountFilter);
 
                     mostDiverseUint = intWords[mostDiverseWordIndex];
-                    mostDiverseWord = wordList[mostDiverseWordIndex];
                     numbers[mostDiverseWordIndex] = 1;
                     _maxDiversity = Math.Min(_maxDiversity, _runningDiversity);
                 }
                 else
                 {
                     mostDiverseUint = intWords[41];
-                    mostDiverseWord = wordList[41];
-                    //wordList[41] = null;
                     numbers[41] = 1;
                 }
 
-                Array.Clear(letterCountTuple);
-                Array.Clear(trimList);
-                Array.Clear(goodLetterPositions);
-                Array.Clear(badLetterPositions);
+                Array.Clear(intCountFilter);
 
-#if DEBUG
-                if (outPut)
-                {
-                    var remainingWordCount = 0; for (int i = 0; i < wordList.Count; i++) { if (numbers[i] == 0) { remainingWordCount++; } }
-                    //Console.WriteLine($"RoboGuess: {mostDiverseWord} out of {remainingWordCount + 1} words.");
-                }
-#endif
-                intResult = EvaluateResponse(mostDiverseWord, answerWord, answerInt, mostDiverseUint);
+                intResult = EvaluateResponse(answerInt, mostDiverseUint);
                 if (intResult[0] + intResult[1] + intResult[2] + intResult[3] + intResult[4] == 0) { continue; }
 
                 SetPruners(mostDiverseUint);
 
                 guessesRemaining1--;
-#if DEBUG
-                //if (outPut) { Console.WriteLine(new string(_result.ToArray())); }
-#endif
             }
             return intResult;
         }
@@ -126,42 +101,32 @@ namespace Wordler.Core
             {
                 if (letterResults[i].bad + letterResults[i].wrong + letterResults[i].good > 0)
                 {
-                    trimList[maxTempIndex] = ((char)('a' + i), letterResults[i].bad, letterResults[i].wrong, letterResults[i].good);
-                    letterResults[i] = (0, 0, 0);
+                    trimList[maxTempIndex] = ((byte)i, letterResults[i].bad, letterResults[i].wrong, letterResults[i].good);
+                    letterResults[i] = (0, 0, 0); //reset for next time
                     maxTempIndex++;
                 }
             }
 
             var letterCountTupleCount = 0;
-            for (var i = 0; i < maxTempIndex; i++)
+            for (var i = 0; i < 5; i++)
             {
                 var upperLimit = byte.MaxValue;
-                if (trimList[i].bad > 0)
-                {
-                    /*Then we know the upper limit*/
-                    upperLimit = (byte)(trimList[i].good + trimList[i].wrong);
-                }
-
+                if (trimList[i].bad > 0) { /*Then we know the upper limit*/ upperLimit = (byte)(trimList[i].good + trimList[i].wrong); }
                 byte lowerLimit = (byte)(trimList[i].good + trimList[i].wrong);
-                letterCountTuple[letterCountTupleCount] = ((trimList[i].letter, lowerLimit, upperLimit));
+                intCountFilter[letterCountTupleCount] = ((trimList[i].letter), lowerLimit, upperLimit);
                 letterCountTupleCount++;
             }
         }
 
         public unsafe int PrunePossibleWords(
-            (char letter, byte minCount, byte maxCount)[] letterCountTuple,
-            char[] goodLetterPositions,
-            char[] badLetterPositions,
-            byte* numbers, uint[] intWords, (byte letter, byte minCount, byte maxCount)[] intCountFilter)
+            byte* numbers, uint[] intWords,
+            (byte letter, byte minCount, byte maxCount)[] intCountFilter)
         {
             int count;
             _currentDiversity = 0;
             _winningIndex = 0;
             _runningDiversity = 0;
-#if DEBUG
-            var wordsDeletedByletterCountTuple = 0;
-            var wordsDeltedByPosition = 0;
-#endif
+
             for (var i = 0; i < intWords.Length; i++)
             {
                 if (numbers[i] == 1) continue;
@@ -173,9 +138,6 @@ namespace Wordler.Core
                         if ((byte)(0b11111 & (intWord >> (4 - index) * 5)) == badBytePositions[index])
                         {
                             numbers[i] = 1;
-#if DEBUG
-                            wordsDeltedByPosition++;
-#endif
                             break;
                         }
                     }
@@ -184,9 +146,6 @@ namespace Wordler.Core
                         if ((byte)(0b11111 & (intWord >> (4 - index) * 5)) != goodBytePositions[index])
                         {
                             numbers[i] = 1;
-#if DEBUG
-                            wordsDeltedByPosition++;
-#endif
                             break;
                         }
                     }
@@ -216,7 +175,6 @@ namespace Wordler.Core
                 Array.Clear(_diversityCharacters);
                 for (var j = 0; j < 5; j++)
                 {
-                    //var c = word[j];
                     _diversityCharacters[(0b11111 & (intWord >> (4 - j) * 5))]++;
                 }
                 _currentDiversity = 0;
@@ -231,42 +189,30 @@ namespace Wordler.Core
                     _runningDiversity = _currentDiversity;
                 }
             }
-#if DEBUG
-            Trace.WriteLine($"Words deleted by letterCount: {wordsDeletedByletterCountTuple} with {letterCountTuple.Length} letter filters. {string.Join(",", letterCountTuple.Select(l => $"{l.letter} {l.minCount}=>{(l.maxCount > 5 ? -1 : l.maxCount)}"))})");
-            //Trace.WriteLine($"Words deleted by Position: {wordsDeltedByPosition} with '{new string(badLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' bad and '{new string(goodLetterPositions.Select(x => x == '\0' ? ' ' : x).ToArray())}' good.");
-#endif
             return _winningIndex;
         }
 
-        public int[] EvaluateResponse(string guessWord, string targetWord, uint answerInt, uint guessUint)
+        public int[] EvaluateResponse(uint answerInt, uint guessUint)
         {
             intResult = new int[5]; //0 = blank, 1 = X, 2 = Y, 3 = G
             Array.Clear(intResult);
 
-            //if (guessWord.Length != 5) return "     ";
-            answers = targetWord.ToArray();
-
             for (var i = 0; i < 5; i++)
             {
-                var test = (0b11111 & (answerInt >> (4 - i) * 5)) == (0b11111 & (guessUint >> (4 - i) * 5));
                 if ((byte)(0b11111 & (answerInt >> (4 - i) * 5)) == (byte)(0b11111 & (guessUint >> (4 - i) * 5)))
                 {
                     intResult[i] = 3;
-                    answers[i] = ' ';
-                    answerInt |= (uint)(0b11111 >> (4 - i) * 5);
+                    answerInt |= (uint)(0b11111 << (4 - i) * 5);
                 }
             }
 
             for (var i = 0; i < 5; i++)
             {
-
                 if (intResult[i] != 0) { continue; }
-
                 var index = -1;
-
                 for (var index1 = 0; index1 < 5; index1++)
                 {
-                    if (answers[index1] == guessWord[i] && (0b11111 & (answerInt >> (4 - index1) * 5)) == (0b11111 & (guessUint >> (4 - i) * 5)))
+                    if ((0b11111 & (answerInt >> (4 - index1) * 5)) == (0b11111 & (guessUint >> (4 - i) * 5)))
                     {
                         index = index1;
                         break;
@@ -278,9 +224,7 @@ namespace Wordler.Core
                     intResult[i] = 1;
                     continue;
                 }
-
                 intResult[i] = 2;
-                answers[index] = ' ';
                 answerInt |= (uint)(0b11111 << ((4 - index) * 5));
             }
             return intResult;
@@ -295,6 +239,19 @@ namespace Wordler.Core
                 l <<= 5;
             }
             return l >> 5;
+        }
+
+        public static string IntToString(uint ss)
+        {
+            uint l;
+            char[] result = new char[5];
+            for (var i = 0; i < 5; i++)
+            {
+                l = (char)((ss & 0b11111) + 'a');
+                result[4 - i] = (char)l;
+                ss >>= 5;
+            }
+            return new(result);
         }
     }
 

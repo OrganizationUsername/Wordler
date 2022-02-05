@@ -45,7 +45,7 @@ public class Benchmark
     {
         foreach (var s in someWords)
         {
-            solver.TryAnswersRemove(6, AllWordsArray, s, false, intWords);
+            solver.TryAnswersRemove(6, false, intWords, Solver.StringToInt(s));
         }
         return "";
     }
@@ -57,7 +57,7 @@ public class Benchmark
         for (var i = 0; i < AllWordsArray.Length; i++) { intWords2[i] = Solver.StringToInt(AllWordsArray[i]); }
         foreach (var s in someWords)
         {
-            solver.TryAnswersRemove(6, AllWordsArray, s, false, intWords2);
+            solver.TryAnswersRemove(6, false, intWords, Solver.StringToInt(s));
         }
         return "";
     }
@@ -81,7 +81,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string CsaPreProcessedSolver()
     {
         int maxSteps = 0;
@@ -106,7 +106,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);
