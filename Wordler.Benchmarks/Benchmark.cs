@@ -4,11 +4,11 @@ using Wordler.Core;
 
 namespace Wordler.Benchmarks;
 
-//[ShortRunJob]
+[ShortRunJob]
 [MemoryDiagnoser]
 public class Benchmark
 {
-    [Params(1, 10, 100, 1_000)]
+    [Params(/*1, 10, */100, 1_000)]
     public int Count { get; set; }
     public SwearSolver ss { get; set; }
     public SwearSolver ssp { get; set; }
@@ -73,7 +73,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string CsaPreProcessedSolver()
     {
         int maxSteps = 0;
@@ -98,7 +98,7 @@ public class Benchmark
         return "";
     }
 
-    [Benchmark]
+    //[Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);

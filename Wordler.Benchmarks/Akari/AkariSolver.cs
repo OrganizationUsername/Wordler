@@ -1,4 +1,4 @@
-#define ENABLE_AKARI_TEST
+//#define ENABLE_AKARI_TEST
 namespace Wordler.Akari;
 
 using System.Runtime.InteropServices;
