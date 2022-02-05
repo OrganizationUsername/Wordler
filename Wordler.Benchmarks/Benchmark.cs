@@ -4,7 +4,7 @@ using Wordler.Core;
 
 namespace Wordler.Benchmarks;
 
-[ShortRunJob]
+//[ShortRunJob]
 [MemoryDiagnoser]
 public class Benchmark
 {
@@ -40,34 +40,8 @@ public class Benchmark
         for (var i = 0; i < AllWordsArray.Length; i++) { intWords[i] = Solver.StringToInt(AllWordsArray[i]); }
     }
 
-    [Benchmark]
-    public string NaiveSolvePreProcessed()
-    {
-        for (var index = 0; index < someWords.Count; index++)
-        {
-            var s = someWords[index];
-            solver.TryAnswersRemove(6, false, intWords, Solver.StringToInt(s));
-        }
-
-        return "";
-    }
-
     [Benchmark(Baseline = true)]
     public string NaiveSolve()
-    {
-        var intWords2 = new uint[AllWordsArray.Length];
-        for (var i = 0; i < AllWordsArray.Length; i++) { intWords2[i] = Solver.StringToInt(AllWordsArray[i]); }
-
-        for (var index = 0; index < someWords.Count; index++)
-        {
-            var s = someWords[index];
-            solver.TryAnswersRemove(6, false, intWords, Solver.StringToInt(s));
-        }
-        return "";
-    }
-
-    [Benchmark]
-    public string NaiveSolveAggressive()
     {
         var intWords2 = new uint[AllWordsArray.Length];
         for (var i = 0; i < AllWordsArray.Length; i++) { intWords2[i] = Solver.StringToIntAggressive(AllWordsArray[i]); }
@@ -99,7 +73,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string CsaPreProcessedSolver()
     {
         int maxSteps = 0;
@@ -124,7 +98,7 @@ public class Benchmark
         return "";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string SwearPreProcessedSolver()
     {
         ss.Run(Count, false);

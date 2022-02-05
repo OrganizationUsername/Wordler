@@ -44,7 +44,7 @@ startMemory = GC.GetAllocatedBytesForCurrentThread();
 Solver solver = new Solver();
 
 var intWords = new uint[possibles.Length];
-for (var i = 0; i < possibles.Length; i++) { intWords[i] = Solver.StringToInt(possibles[i]); }
+for (var i = 0; i < possibles.Length; i++) { intWords[i] = Solver.StringToIntAggressive(possibles[i]); }
 
 
 for (var s = 0; s < numberToTake; s++)
@@ -58,7 +58,7 @@ for (var s = 0; s < numberToTake; s++)
 
     if (outPut) { Console.WriteLine(answerWord); }
 
-    var result = solver.TryAnswersRemove(guessesRemaining, outPut, intWords, Solver.StringToInt(answerWord)); // 21_280 bytes allocated
+    var result = solver.TryAnswersRemove(guessesRemaining, outPut, intWords, Solver.StringToIntAggressive(answerWord)); // 21_280 bytes allocated
 
     //Solver.GetAllocations(startMemory, "After  Guess: " + Solver.Log());
     var success = result[0] + result[1] + result[2] + result[3] + result[4] == 15;

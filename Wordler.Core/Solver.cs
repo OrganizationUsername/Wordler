@@ -19,7 +19,7 @@ namespace Wordler.Core
         readonly byte[,] AlreadyForbidden = new byte[26, 5];
         readonly byte[] AlreadyRequired = new byte[5];
         private uint intWord;
-        private int[] intResult = new int[5];
+        private byte[] intResult = new byte[5];
 
         public static List<string> GetLines() => File.ReadAllLines("FiveLetterWords.txt").ToList();
 
@@ -32,7 +32,7 @@ namespace Wordler.Core
         /////*GetAllocations(StartMemory, Log());*/
         public static string Log([CallerFilePath] string file = null, [CallerLineNumber] int line = 0) => $" {Path.GetFileName(file)}, {line}";
 
-        public unsafe int[] TryAnswersRemove(int guessesRemaining1, bool outPut, uint[] intWords, uint answerInt)
+        public unsafe byte[] TryAnswersRemove(int guessesRemaining1, bool outPut, uint[] intWords, uint answerInt)
         {
             uint mostDiverseUint;
             //_startMemory = GC.GetAllocatedBytesForCurrentThread();
@@ -192,9 +192,10 @@ namespace Wordler.Core
             return _winningIndex;
         }
 
-        public int[] EvaluateResponse(uint answerInt, uint guessUint)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte[] EvaluateResponse(uint answerInt, uint guessUint)
         {
-            intResult = new int[5]; //0 = blank, 1 = X, 2 = Y, 3 = G
+            intResult = new byte[5]; //0 = blank, 1 = X, 2 = Y, 3 = G
             Array.Clear(intResult);
 
             for (var i = 0; i < 5; i++)
