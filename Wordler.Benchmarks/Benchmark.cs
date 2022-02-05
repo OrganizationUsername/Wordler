@@ -66,6 +66,20 @@ public class Benchmark
         return "";
     }
 
+    [Benchmark]
+    public string NaiveSolveAggressive()
+    {
+        var intWords2 = new uint[AllWordsArray.Length];
+        for (var i = 0; i < AllWordsArray.Length; i++) { intWords2[i] = Solver.StringToIntAggressive(AllWordsArray[i]); }
+
+        for (var index = 0; index < someWords.Count; index++)
+        {
+            var s = someWords[index];
+            solver.TryAnswersRemove(6, false, intWords, Solver.StringToIntAggressive(s));
+        }
+        return "";
+    }
+
     //[Benchmark]
     public string CsaSolver()
     {

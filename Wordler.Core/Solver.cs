@@ -230,6 +230,18 @@ namespace Wordler.Core
             return intResult;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint StringToIntAggressive(string ss)
+        {
+            uint l = 0;
+            for (var i = 0; i < 5; i++)
+            {
+                l |= (byte)(ss[i] - 'a');
+                l <<= 5;
+            }
+            return l >> 5;
+        }
+
         public static uint StringToInt(string ss)
         {
             uint l = 0;
